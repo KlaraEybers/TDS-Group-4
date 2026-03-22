@@ -1,8 +1,0 @@
-"source_variable","group","max_selection_proportion","selected"
-"employment","exposure",0.93,TRUE
-"triglycerides","biological",0.92,TRUE
-"meds_chol_bp_diabetes_hormone_collapsed","biological",0.91,TRUE
-"alcohol_consumption","exposure",0.86,TRUE
-"serious_dx","biological",0.81,TRUE
-"diabetes_doctor_diagnosed","biological",0.8,TRUE
-"smoking_status_refined","exposure",0.78,TRUE

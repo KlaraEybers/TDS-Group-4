@@ -1,6 +1,0 @@
-"source_variable","group","max_selection_proportion","selected"
-"smoking_status_refined","exposure",1,TRUE
-"alcohol_consumption","exposure",0.95,TRUE
-"triglycerides","biological",0.91,TRUE
-"salt_added","exposure",0.9,TRUE
-"employment","exposure",0.84,TRUE

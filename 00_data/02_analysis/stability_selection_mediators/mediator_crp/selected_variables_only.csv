@@ -1,8 +1,0 @@
-"source_variable","group","max_selection_proportion","selected"
-"diet_score","exposure",0.95,TRUE
-"household_income","exposure",0.93,TRUE
-"salt_added","exposure",0.89,TRUE
-"smoking_status_refined","exposure",0.79,TRUE
-"highest_qualification","exposure",0.78,TRUE
-"no2_2010","exposure",0.76,TRUE
-"met_min_week_all","exposure",0.75,TRUE

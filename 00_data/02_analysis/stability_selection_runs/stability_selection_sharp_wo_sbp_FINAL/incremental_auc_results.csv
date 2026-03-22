@@ -1,7 +1,0 @@
-"step","model_type","added_variable","n_variables_added","auc"
-0,"baseline",NA,0,0.813926209765258
-1,"incremental","triglycerides",1,0.813994662077798
-2,"incremental","employment",2,0.813928577653687
-3,"incremental","smoking_status_refined",3,0.813962829379822
-4,"incremental","housing",4,0.813965835920227
-5,"incremental","salt_added",5,0.813947104507497

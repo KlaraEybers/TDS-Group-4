@@ -1,3 +1,0 @@
-"Model","AUC","CI_Lower","CI_Upper"
-"Minimal (Age + Sex + Ethnicity)",0.8139,0.8099,0.8179
-"Full (+ Exposures + Biomarkers)",0.8138,0.8098,0.8179

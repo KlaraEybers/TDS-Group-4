@@ -1,0 +1,144 @@
+rm(list = ls())
+
+suppressWarnings({
+  library(dplyr)
+  library(miceRanger)
+})
+
+# -----------------------------
+# 0) paths
+# -----------------------------
+root <- "/rds/general/user/sh425/projects/hda_25-26/live/TDS/TDS_Group4/00_data/01_processed"
+path_final <- file.path(root, "ukb_final_cleaned.rds")
+
+# -----------------------------
+# 1) load final merged dataset
+# -----------------------------
+dat <- readRDS(path_final)
+
+cat("Loaded:", path_final, "\n")
+cat("Dim:", dim(dat), "\n")
+
+# ensure eid exists
+stopifnot("eid" %in% names(dat))
+dat$eid <- suppressWarnings(as.integer(as.character(dat$eid)))
+
+# -----------------------------
+# 2) outcome (set explicitly if known)
+# -----------------------------
+# Try auto-detect; if you know the exact name, just set outcome <- "has_cvd"
+outcome_candidates <- c("has_cvd", "has_cvd_incident", "event", "cvd_event", "outcome")
+outcome <- outcome_candidates[outcome_candidates %in% names(dat)][1]
+
+if (is.na(outcome)) {
+  cat("Outcome column not found in the usual names.\n")
+  cat("Possible candidates:\n")
+  print(grep("cvd|event|outcome|has_", names(dat), ignore.case = TRUE, value = TRUE))
+  stop("Please set outcome <- 'YOUR_OUTCOME_COLUMN_NAME'")
+}
+
+cat("Using outcome:", outcome, "\n")
+
+# coerce outcome to 0/1 integer if possible
+dat[[outcome]] <- suppressWarnings(as.integer(as.character(dat[[outcome]])))
+cat("Outcome missing:", sum(is.na(dat[[outcome]])), "\n")
+print(table(dat[[outcome]], useNA = "ifany"))
+
+# -----------------------------
+# 3) split train/val/test
+# -----------------------------
+set.seed(1)
+idx <- sample(seq_len(nrow(dat)))
+n <- nrow(dat)
+
+i_train <- idx[1:floor(0.7*n)]
+i_val   <- idx[(floor(0.7*n)+1):floor(0.85*n)]
+i_test  <- idx[(floor(0.85*n)+1):n]
+
+train <- dat[i_train, ]
+val   <- dat[i_val, ]
+test  <- dat[i_test, ]
+
+saveRDS(
+  list(train_eid=train$eid, val_eid=val$eid, test_eid=test$eid),
+  file.path(root, "split_eids_seed1.rds")
+)
+cat("Split sizes:", nrow(train), nrow(val), nrow(test), "\n")
+
+# -----------------------------
+# 4) define columns to exclude from imputation
+# -----------------------------
+id_col <- "eid"
+date_cols <- intersect(c("recruitment_date", "death_date"), names(dat))
+
+# do not impute ID/outcome/dates
+no_impute_cols <- c(id_col, outcome, date_cols)
+
+pred_vars <- setdiff(names(dat), no_impute_cols)
+
+# -----------------------------
+# 5) ranger threads (RStudio Server safe)
+# -----------------------------
+# Avoid using all cores in RStudio Server; keep it modest
+n_cores <- min(4, parallel::detectCores())
+options(ranger.num.threads = n_cores)
+cat("Using ranger.num.threads =", n_cores, "\n")
+
+# -----------------------------
+# 6) DRY RUN: impute a small subset first 
+# -----------------------------
+# choose variables with highest missingness (up to 50) to validate the pipeline
+miss <- sort(colMeans(is.na(train[, pred_vars, drop = FALSE])), decreasing = TRUE)
+pred_vars_small <- names(miss)[1:min(50, length(miss))]
+pred_vars_small <- pred_vars_small[!is.na(pred_vars_small)]
+
+train_x <- train[, pred_vars_small, drop = FALSE]
+
+# convert types for stability
+for (v in names(train_x)) {
+  if (is.character(train_x[[v]])) train_x[[v]] <- factor(train_x[[v]])
+  if (is.logical(train_x[[v]]))   train_x[[v]] <- factor(train_x[[v]])
+}
+
+# drop columns that are all-NA or have <=1 unique non-missing value (ranger can't learn)
+bad_all_na <- names(train_x)[colSums(!is.na(train_x)) == 0]
+bad_one_level <- names(train_x)[sapply(train_x, function(x) length(unique(x[!is.na(x)])) <= 1)]
+
+drop_bad <- unique(c(bad_all_na, bad_one_level))
+if (length(drop_bad) > 0) {
+  cat("Dropping problematic columns (all-NA or <=1 level):", length(drop_bad), "\n")
+  cat(paste(head(drop_bad, 30), collapse = ", "), "\n")
+  train_x <- train_x[, setdiff(names(train_x), drop_bad), drop = FALSE]
+}
+
+cat("Starting dry-run imputation on", ncol(train_x), "predictor columns...\n")
+
+imp_dry <- miceRanger(
+  data = train_x,
+  m = 1,
+  maxiter = 1,
+  num.trees = 50,
+  verbose = TRUE
+)
+
+# IMPORTANT: stable way to extract the completed dataset
+train_x_imp_dry <- completeData(imp_dry, 1)
+
+# recombine (ID/outcome/dates + imputed predictors subset)
+train_imp_dry <- cbind(
+  train[, no_impute_cols, drop = FALSE],
+  train_x_imp_dry
+)
+
+# -----------------------------
+# 7) save outputs
+# -----------------------------
+saveRDS(imp_dry, file.path(root, "imp_miceranger_m1_iter1.rds"))
+saveRDS(train_imp_dry, file.path(root, "train_imputed_m1_iter1.rds"))
+
+cat("Dry-run imputation complete and saved.\n")
+cat("Saved:\n")
+cat(" -", file.path(root, "imp_miceranger_m1_iter1.rds"), "\n")
+cat(" -", file.path(root, "train_imputed_m1_iter1.rds"), "\n")
+cat("Imputed training set dim:", dim(train_imp_dry), "\n")
+

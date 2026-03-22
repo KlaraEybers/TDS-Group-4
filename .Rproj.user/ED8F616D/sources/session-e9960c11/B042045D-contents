@@ -1,0 +1,33 @@
+digraph DAG {
+  rankdir = LR
+  node [style=filled, shape=box, fontsize=10]
+  "age" [fillcolor="#D5E8D4"]
+  "sex" [fillcolor="#D5E8D4"]
+  "ethnicity" [fillcolor="#D5E8D4"]
+  "smoking_status_refined" [fillcolor="#DAE8FC"]
+  "diet_score" [fillcolor="#DAE8FC"]
+  "household_income" [fillcolor="#DAE8FC"]
+  "met_min_week_all" [fillcolor="#DAE8FC"]
+  "alcohol_consumption" [fillcolor="#DAE8FC"]
+  "crp" [fillcolor="#FFE6CC"]
+  "hba1c" [fillcolor="#FFE6CC"]
+  "hdl_cholesterol" [fillcolor="#FFE6CC"]
+  "CVD" [fillcolor="#F8CECC"]
+  "age" -> "CVD"
+  "sex" -> "CVD"
+  "ethnicity" -> "CVD"
+  "smoking_status_refined" -> "CVD"
+  "diet_score" -> "CVD"
+  "household_income" -> "CVD"
+  "met_min_week_all" -> "CVD"
+  "alcohol_consumption" -> "CVD"
+  "smoking_status_refined" -> "crp"
+  "diet_score" -> "crp"
+  "diet_score" -> "hba1c"
+  "alcohol_consumption" -> "hba1c"
+  "diet_score" -> "hdl_cholesterol"
+  "met_min_week_all" -> "hdl_cholesterol"
+  "crp" -> "CVD"
+  "hba1c" -> "CVD"
+  "hdl_cholesterol" -> "CVD"
+}

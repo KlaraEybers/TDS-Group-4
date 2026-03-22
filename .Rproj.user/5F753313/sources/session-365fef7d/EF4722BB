@@ -1,0 +1,26 @@
+{
+    "id": "EF4722BB",
+    "path": "/rds/general/user/hae125/home/../projects/hda_25-26/live/TDS/TDS_Group4/01_scripts/02_analysis/03_exploratory/incrementation_analysis.R",
+    "project_path": "01_scripts/02_analysis/03_exploratory/incrementation_analysis.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1773972565692.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "13,42",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1774016330,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1774016330159,
+    "read_only": false,
+    "read_only_alternatives": []
+}

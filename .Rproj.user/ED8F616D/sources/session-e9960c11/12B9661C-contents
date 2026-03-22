@@ -1,0 +1,52 @@
+rm(list = ls())
+
+# Import packages ---------------------------------------------------------
+
+library(dplyr)
+library(here)
+
+# Import data -------------------------------------------------------------
+
+df <- readRDS(here("00_data", "01_processed", "ukb_final_merged.rds"))
+
+
+# Set missingness thresholds ----------------------------------------------
+
+variable_threshold <- 0.45
+participant_threshold <- 0.3
+
+
+# Remove missingness above thresholds -------------------------------------
+
+# Columns to protect from removal
+protected <- c("death_date", "first_cvd_date")
+
+# Remove high-missingness variables (except protected ones)
+var_miss <- sapply(df, function(x) mean(is.na(x)))
+high_miss_vars <- sort(var_miss[var_miss > variable_threshold & !names(var_miss) %in% protected], decreasing = TRUE)
+cat("Variables with high missingness:\n")
+print(high_miss_vars)
+cat("\nCount:", length(high_miss_vars), "out of", ncol(df), "\n")
+
+
+drop_vars <- names(var_miss[var_miss > variable_threshold & !names(var_miss) %in% protected])
+df <- df[, !names(df) %in% drop_vars]
+
+# Remove high-missingness participants
+row_miss <- rowMeans(is.na(df))
+drop_rows <- row_miss > participant_threshold
+cat("\nDropping participants:", sum(drop_rows), "out of", nrow(df), "\n")
+
+df <- df[!drop_rows, ]
+
+
+# Final dimensions --------------------------------------------------------
+
+cat("\nFinal dimensions:", nrow(df), "x", ncol(df), "\n")
+
+
+# Export data -------------------------------------------------------------
+
+saveRDS(df, here("00_data", "01_processed", "ukb_final_cleaned.rds"))
+
+

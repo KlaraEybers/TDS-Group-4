@@ -1,0 +1,15 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+/var/spool/pbs/mom_priv/jobs/1998477.pbs-7.SC: line 17: 1003890 Killed                  Rscript 01_scripts/01_processing/00_initial_clean.R $ukb_path
+Cgroup mem limit exceeded: oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=1998477.pbs-7,mems_allowed=0-7,oom_memcg=/pbs_jobs.service/jobid/1998477.pbs-7,task_memcg=/pbs_jobs.service/jobid/1998477.pbs-7,task=R,pid=1003890,uid=1838560
+

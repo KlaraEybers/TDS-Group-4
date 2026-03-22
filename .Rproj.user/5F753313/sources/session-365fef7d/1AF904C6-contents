@@ -1,0 +1,7 @@
+"source_variable","group"
+"age","confounder"
+"ethnicity","confounder"
+"sex","confounder"
+"age_diabetes_dx","exposure"
+"age_high_bp_dx","exposure"
+"sbp","exposure"

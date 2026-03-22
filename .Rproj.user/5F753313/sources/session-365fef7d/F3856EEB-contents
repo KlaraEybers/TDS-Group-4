@@ -1,0 +1,99 @@
+rm(list = ls())
+
+# Import packages ---------------------------------------------------------
+
+library(here)
+library(dplyr)
+
+# Import data -------------------------------------------------------------
+
+ukb_clean <- readRDS(here("00_data", "01_processed", "ukb_initial_cleaned.rds"))
+
+# Extract relevant columns ------------------------------------------------
+
+pattern <- paste(c(
+  "no2_2010",
+  "pm2.5_2010",
+  "pm10_2010",
+  "pop_density_urban_rural"
+), collapse = "|")
+
+matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
+
+selected_data <- ukb_clean %>%
+  select(eid, all_of(matching_cols))
+
+# Distribution of variables (JUST FOR ME TO SEE) -----------------------------
+
+table(ukb_clean$no2_2010.0.0, useNA = "ifany")
+table(ukb_clean$pm2.5_2010.0.0, useNA = "ifany")
+table(ukb_clean$pm10_2010.0.0, useNA = "ifany")
+table(ukb_clean$pop_density_urban_rural.0.0, useNA = "ifany")
+
+quantile(ukb_clean$pm2.5_2010.0.0, probs = c(0.99, 0.995, 0.999), na.rm = TRUE)
+quantile(ukb_clean$pm10_2010.0.0, probs = c(0.99, 0.995, 0.999), na.rm = TRUE)
+quantile(ukb_clean$no2_2010.0.0, probs = c(0.99, 0.995, 0.999), na.rm = TRUE)
+
+# Environment cleaning ----------------------------------------------------
+
+env_clean <- selected_data %>%
+  mutate(
+    no2_2010.0.0 = ifelse(no2_2010.0.0 < 0, NA, no2_2010.0.0),
+    pm2.5_2010.0.0 = ifelse(pm2.5_2010.0.0 < 0, NA, pm2.5_2010.0.0),
+    pm10_2010.0.0 = ifelse(pm10_2010.0.0 < 0, NA, pm10_2010.0.0),
+    
+    urban_rural_3lvl = case_when(
+      pop_density_urban_rural.0.0 == "Postcode not linkable" ~ NA_character_,
+      
+      # Urban
+      pop_density_urban_rural.0.0 %in% c(
+        "England/Wales - Urban - sparse",
+        "England/Wales - Urban - less sparse",
+        "Scotland - Large Urban Area",
+        "Scotland - Other Urban Area"
+      ) ~ "Urban",
+      
+      # Town
+      pop_density_urban_rural.0.0 %in% c(
+        "England/Wales - Town and Fringe - sparse",
+        "England/Wales - Town and Fringe - less sparse",
+        "Scotland - Accessible Small Town",
+        "Scotland - Remote Small Town",
+        "Scotland - Very Remote Small Town"
+      ) ~ "Town",
+      
+      # Rural
+      pop_density_urban_rural.0.0 %in% c(
+        "England/Wales - Village - sparse",
+        "England/Wales - Village - less sparse",
+        "England/Wales - Hamlet and Isolated dwelling - sparse",
+        "England/Wales - Hamlet and Isolated Dwelling - less sparse",
+        "Scotland - Accessible Rural",
+        "Scotland - Remote Rural",
+        "Scotland - Very Remote Rural"
+      ) ~ "Rural",
+      
+      TRUE ~ NA_character_
+    ),
+    
+    urban_rural_3lvl = factor(urban_rural_3lvl,
+                              levels = c("Urban", "Town", "Rural"))
+  ) %>%
+  select(eid, no2_2010.0.0, pm2.5_2010.0.0, pm10_2010.0.0, urban_rural_3lvl)
+
+saveRDS(env_clean, here("00_data", "01_processed", "environment_cleaned.rds"))
+
+# Sanity Check ----------------------------------------------------
+
+str(env_clean)
+hist(env_clean$no2_2010, breaks = 50,
+     main = "NO2 2010", xlab = "NO2")
+
+hist(env_clean$`pm2.5_2010`, breaks = 50,
+     main = "PM2.5 2010", xlab = "PM2.5")
+
+hist(env_clean$pm10_2010, breaks = 50,
+     main = "PM10 2010", xlab = "PM10")
+
+table(env_clean$urban_rural_3lvl, useNA = "ifany")
+nrow(env_clean)

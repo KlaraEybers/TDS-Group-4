@@ -1,0 +1,13 @@
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=1:mem=10gb
+#PBS -N dict
+
+cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/extraction_and_recoding/scripts
+
+eval "$(~/anaconda3/bin/conda shell.bash hook)"
+source activate r413
+
+ukb_path=/rds/general/project/hda_25-26/live/TDS/General/Data/tabular.tsv
+
+Rscript 1-make_data_dict.R $ukb_path
+

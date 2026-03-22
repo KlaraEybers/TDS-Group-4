@@ -1,0 +1,26 @@
+{
+    "id": "17306DD7",
+    "path": "/rds/general/project/hda_25-26/live/TDS/TDS_Group4/03_jobs/1-pre-processing.sh",
+    "project_path": "03_jobs/1-pre-processing.sh",
+    "type": "sh",
+    "hash": "1443779301",
+    "contents": "",
+    "dirty": false,
+    "created": 1774209086474.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "1,31",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1774214492,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1774214492252,
+    "read_only": false,
+    "read_only_alternatives": []
+}

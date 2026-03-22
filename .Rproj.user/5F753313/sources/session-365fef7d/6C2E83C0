@@ -1,0 +1,26 @@
+{
+    "id": "6C2E83C0",
+    "path": "/rds/general/user/hae125/home/../projects/hda_25-26/live/TDS/TDS_Group4/01_scripts/02_analysis/03_exploratory/sharp_n_cat_3_stability_selection.R",
+    "project_path": "01_scripts/02_analysis/03_exploratory/sharp_n_cat_3_stability_selection.R",
+    "type": "r_source",
+    "hash": "923084028",
+    "contents": "",
+    "dirty": true,
+    "created": 1773937994215.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "641,3",
+        "scrollLine": "625"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1773972868,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1774211676364,
+    "read_only": false,
+    "read_only_alternatives": []
+}

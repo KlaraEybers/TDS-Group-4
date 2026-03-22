@@ -1,0 +1,77 @@
+"feature","selection_proportion"
+"household_income18-31k",0.13
+"household_income31-52k",0.1
+"household_income52-100k",0.15
+"household_income>100k",0.01
+"highest_qualificationCSEs",0.08
+"highest_qualificationO-levels/GCSEs",0.26
+"highest_qualificationProfessional (nursing/teaching)",0.02
+"highest_qualificationVocational (NVQ/HND/HNC)",0.04
+"highest_qualificationA-levels",0.08
+"highest_qualificationUniversity degree",0.03
+"employmentRetired",0.07
+"employmentOther economically inactive",0.04
+"employmentUnemployed",0.7
+"employmentUnable to work",0.37
+"housingRenter",0.5
+"housingOther",0.1
+"household_size2 people",0.05
+"household_size3-5 people",0.06
+"household_size6+ people",0.07
+"diet_score",0.08
+"alcohol_consumptionFormer drinker",0.27
+"alcohol_consumptionSocial drinker",0.14
+"alcohol_consumptionModerate drinker",0.24
+"alcohol_consumptionDaily drinker",0.07
+"salt_addedSometimes",0.45
+"salt_addedUsually",0.03
+"salt_addedAlways",0.06
+"sleep_hrs",0.15
+"insomniaSometimes",0.02
+"insomniaUsually",0.07
+"smoking_status_refinedFormer_Recent",0.07
+"smoking_status_refinedFormer_Long",0.71
+"smoking_status_refinedCurrent",0.02
+"pack_yrs",0.05
+"passive_total_hrs",0.2
+"met_min_week_all",0.04
+"mh_sought_helpYes",0.05
+"work_job_satisfaction_num",0.13
+"neuroticism_score",0.1
+"breastfedYes",0.06
+"comparative_body_size_10About average",0.34
+"comparative_body_size_10Plumper",0.03
+"maternal_smoking_birthYes",0.15
+"birth_weight",0.06
+"no2_2010",0.15
+"pm2.5_2010",0.02
+"pm10_2010",0.04
+"urban_rural_3lvlTown",0.18
+"urban_rural_3lvlRural",0.02
+"dbp",0.23
+"grip_strength",0.06
+"whr",0.33
+"heel_bone_density",0.01
+"body_fat_mass",0.07
+"wbc",0.06
+"platelets",0.14
+"albumin",0.05
+"alp",0.27
+"alt",0.07
+"apoa1",0.03
+"apob",0.09
+"ast",0.17
+"bilirubin",0.21
+"total_cholesterol",0.18
+"creatinine",0.08
+"crp",0.7
+"cystatin_c",0.1
+"ggt",0.11
+"hba1c",0.26
+"hdl_cholesterol",0.06
+"ldl_direct",0
+"lpa",0.25
+"triglycerides",0.77
+"neutrophill_count",0.07
+"lymphocyte_count",0.06
+"monocyte_count",0.18

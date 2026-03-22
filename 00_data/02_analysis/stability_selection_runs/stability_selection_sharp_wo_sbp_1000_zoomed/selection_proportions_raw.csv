@@ -1,0 +1,92 @@
+"feature","selection_proportion"
+"household_income18-31k",0.34
+"household_income31-52k",0.51
+"household_income52-100k",0.31
+"household_income>100k",0.35
+"highest_qualificationCSEs",0.38
+"highest_qualificationO-levels/GCSEs",0.58
+"highest_qualificationProfessional (nursing/teaching)",0.18
+"highest_qualificationVocational (NVQ/HND/HNC)",0.2
+"highest_qualificationA-levels",0.38
+"highest_qualificationUniversity degree",0.14
+"employmentRetired",0.2
+"employmentOther economically inactive",0.23
+"employmentUnemployed",0.93
+"employmentUnable to work",0.79
+"housingRenter",0.48
+"housingOther",0.35
+"household_size2 people",0.26
+"household_size3-5 people",0.21
+"household_size6+ people",0.19
+"diet_score",0.37
+"alcohol_consumptionFormer drinker",0.41
+"alcohol_consumptionSocial drinker",0.4
+"alcohol_consumptionModerate drinker",0.86
+"alcohol_consumptionDaily drinker",0.11
+"salt_addedSometimes",0.56
+"salt_addedUsually",0.22
+"salt_addedAlways",0.35
+"sleep_hrs",0.41
+"sleep_catShort",0.09
+"sleep_catLong",0.24
+"insomniaSometimes",0.21
+"insomniaUsually",0.21
+"smoking_status_refinedFormer_Recent",0.2
+"smoking_status_refinedFormer_Long",0.78
+"smoking_status_refinedCurrent",0.13
+"pack_yrs",0.38
+"passive_total_hrs",0.43
+"passive_catLow",0.17
+"passive_catHigh",0.21
+"met_min_week_all",0.34
+"mh_sought_helpYes",0.45
+"work_job_satisfaction_num",0.27
+"neuroticism_score",0.35
+"breastfedYes",0.43
+"comparative_body_size_10About average",0.19
+"comparative_body_size_10Plumper",0.22
+"maternal_smoking_birthYes",0.4
+"birth_weight",0.27
+"no2_2010",0.53
+"pm2.5_2010",0.2
+"pm10_2010",0.26
+"urban_rural_3lvlTown",0.4
+"urban_rural_3lvlRural",0.25
+"dbp",0.63
+"grip_strength",0.26
+"whr",0.68
+"heel_bone_density",0.16
+"body_fat_mass",0.32
+"wbc",0.15
+"platelets",0.57
+"albumin",0.35
+"alp",0.62
+"alt",0.2
+"apoa1",0.15
+"apob",0.33
+"ast",0.41
+"bilirubin",0.05
+"total_cholesterol",0.42
+"creatinine",0.31
+"crp",0.45
+"cystatin_c",0.28
+"ggt",0.24
+"hba1c",0.64
+"hdl_cholesterol",0.27
+"ldl_direct",0.04
+"lpa",0.69
+"triglycerides",0.92
+"long_illYes",0.31
+"diabetes_doctor_diagnosedYes",0.8
+"serious_dxYes - you will be asked about this later by an interviewer",0.81
+"angina_dx_age",0.42
+"mi_dx_age",0.61
+"dvt_dx_age",0.63
+"pe_dx_age",0.53
+"stroke_dx_age",0.51
+"heart_problems_collapsedYes",0.54
+"meds_chol_bp_diabetes_hormone_collapsedYes",0.91
+"meds_chol_bp_diabetes_collapsedYes",0.31
+"neutrophill_count",0.43
+"lymphocyte_count",0.3
+"monocyte_count",0.45

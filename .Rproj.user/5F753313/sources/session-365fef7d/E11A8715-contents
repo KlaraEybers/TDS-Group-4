@@ -1,0 +1,348 @@
+rm(list = ls())
+
+# =========================================================
+# Stability Selection LASSO Pipeline (NO IMPUTATION STEP)
+# =========================================================
+
+# Packages -------------------------------------------------
+
+library(here)
+library(dplyr)
+library(purrr)
+library(glmnet)
+library(ggplot2)
+
+# Load data ------------------------------------------------
+
+df <- readRDS(here("00_data", "01_processed", "ukb_train_imputed.rds"))
+
+# Basic checks --------------------------------------------
+
+stopifnot("has_cvd" %in% names(df))
+stopifnot(all(df$has_cvd %in% c(0, 1)))
+
+# Optional strict check: this pipeline assumes no missing values
+na_total <- sum(is.na(df))
+cat("Total NA values in loaded dataset:", na_total, "\n")
+
+# Create output directory ---------------------------------
+
+out_dir <- here("00_data", "02_analysis", "stability_selection")
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# =========================================================
+# 1) Define variable groups
+# =========================================================
+
+confounders <- c("age", "sex", "ethnicity")
+
+biomarkers <- c(
+  "wbc","platelets","albumin","alp","alt","apoa1","apob","ast","bilirubin",
+  "total_cholesterol","creatinine","crp","cystatin_c","ggt","hba1c",
+  "hdl_cholesterol","ldl_direct","lpa","triglycerides"
+)
+
+exclude_vars <- c(
+  "eid",
+  "recruitment_date",
+  "death_date",
+  "first_cvd_date",
+  "has_cvd"
+)
+
+# All candidate predictors except exclusions
+all_predictors <- setdiff(names(df), exclude_vars)
+
+# Exposures = everything not confounder and not biomarker
+exposures <- setdiff(all_predictors, c(confounders, biomarkers))
+
+# Keep only variables that actually exist
+confounders <- intersect(confounders, names(df))
+biomarkers  <- intersect(biomarkers, names(df))
+exposures   <- intersect(exposures, names(df))
+
+candidate_predictors <- c(confounders, exposures, biomarkers)
+candidate_predictors <- unique(candidate_predictors)
+
+# Keep only required columns
+df <- df %>%
+  select(all_of(c("has_cvd", candidate_predictors, intersect("eid", names(.)))))
+
+# =========================================================
+# 2) Stratified 50% split for selection dataset
+# =========================================================
+
+set.seed(123)
+
+df_sel <- df %>%
+  group_by(has_cvd) %>%
+  slice_sample(prop = 0.5) %>%
+  ungroup()
+
+# Save sampled IDs if available
+if ("eid" %in% names(df_sel)) {
+  write.csv(
+    df_sel %>% select(eid, has_cvd),
+    file.path(out_dir, "selection_dataset_ids.csv"),
+    row.names = FALSE
+  )
+}
+
+# Remove eid before modelling
+if ("eid" %in% names(df_sel)) {
+  df_sel <- df_sel %>% select(-eid)
+}
+
+# =========================================================
+# 3) Prepare data types
+# =========================================================
+
+# Convert character -> factor
+df_sel <- df_sel %>%
+  mutate(across(where(is.character), as.factor))
+
+# Convert Date -> numeric
+date_cols <- names(df_sel)[vapply(df_sel, inherits, logical(1), what = "Date")]
+if (length(date_cols) > 0) {
+  df_sel <- df_sel %>%
+    mutate(across(all_of(date_cols), ~ as.numeric(.)))
+}
+
+# Ensure outcome is numeric 0/1
+df_sel$has_cvd <- as.numeric(df_sel$has_cvd)
+
+# Check for remaining missing values
+na_after_prep <- sum(is.na(df_sel))
+cat("Total NA values after preprocessing:", na_after_prep, "\n")
+
+if (na_after_prep > 0) {
+  stop("Dataset still contains missing values. Stability selection with glmnet requires no NAs.")
+}
+
+# =========================================================
+# 4) One-hot encoding for glmnet
+# =========================================================
+
+x_df <- df_sel %>% select(-has_cvd)
+y <- df_sel$has_cvd
+
+# model.matrix one-hot encodes factors automatically
+x_mat <- model.matrix(~ ., data = x_df)[, -1, drop = FALSE]
+
+# Remove zero-variance columns
+keep_cols <- apply(x_mat, 2, function(z) stats::sd(z) > 0)
+x_mat <- x_mat[, keep_cols, drop = FALSE]
+
+# =========================================================
+# 5) Penalty factors: confounders and anthropometrics unpenalised
+# =========================================================
+
+anthropometrics <- c("whr", "body_fat_mass")
+anthropometrics <- intersect(anthropometrics, names(df))
+
+protected_vars <- c(confounders, anthropometrics)
+protected_vars <- unique(protected_vars)
+
+penalty_factor <- rep(1, ncol(x_mat))
+names(penalty_factor) <- colnames(x_mat)
+
+# Any dummy column derived from confounders and anthropometrics gets penalty 0
+for (v in protected_vars) {
+  idx <- grep(paste0("^", v), colnames(x_mat))
+  if (length(idx) > 0) penalty_factor[idx] <- 0
+}
+
+# =========================================================
+# 6) Stability selection via repeated subsampling + cv.glmnet
+# =========================================================
+
+# Settings
+n_subsamples <- 1000
+subsample_prop <- 0.5
+selection_threshold <- 0.6
+
+set.seed(123)
+
+selected_list <- vector("list", length = n_subsamples)
+lambda_list <- numeric(length = n_subsamples)
+
+for (b in seq_len(n_subsamples)) {
+  # Stratified subsample inside the 50% selection dataset
+  idx0 <- which(y == 0)
+  idx1 <- which(y == 1)
+  
+  sub0 <- sample(idx0, size = ceiling(length(idx0) * subsample_prop))
+  sub1 <- sample(idx1, size = ceiling(length(idx1) * subsample_prop))
+  sub_idx <- sort(c(sub0, sub1))
+  
+  x_sub <- x_mat[sub_idx, , drop = FALSE]
+  y_sub <- y[sub_idx]
+  
+  # CV LASSO logistic regression
+  cv_fit <- cv.glmnet(
+    x = x_sub,
+    y = y_sub,
+    family = "binomial",
+    alpha = 1,
+    nfolds = 5,
+    standardize = TRUE,
+    penalty.factor = penalty_factor,
+    type.measure = "deviance"
+  )
+  
+  lambda_list[b] <- cv_fit$lambda.1se
+  
+  fit <- glmnet(
+    x = x_sub,
+    y = y_sub,
+    family = "binomial",
+    alpha = 1,
+    lambda = cv_fit$lambda.1se,
+    standardize = TRUE,
+    penalty.factor = penalty_factor
+  )
+  
+  coefs <- coef(fit)
+  nz <- rownames(coefs)[as.vector(coefs != 0)]
+  nz <- setdiff(nz, "(Intercept)")
+  selected_list[[b]] <- nz
+}
+
+# =========================================================
+# 7) Selection proportions
+# =========================================================
+
+all_selected_features <- sort(unique(unlist(selected_list)))
+
+selection_counts <- sapply(all_selected_features, function(v) {
+  sum(sapply(selected_list, function(z) v %in% z))
+})
+
+selection_props <- selection_counts / n_subsamples
+
+selection_table <- data.frame(
+  feature = all_selected_features,
+  selection_count = selection_counts,
+  selection_proportion = selection_props,
+  stringsAsFactors = FALSE
+) %>%
+  arrange(desc(selection_proportion), feature)
+
+# Map encoded features back to original variables
+get_source_variable <- function(feature_name, original_vars) {
+  hits <- original_vars[startsWith(feature_name, original_vars)]
+  if (length(hits) == 0) return(NA_character_)
+  hits[which.max(nchar(hits))]
+}
+
+selection_table$source_variable <- sapply(
+  selection_table$feature,
+  get_source_variable,
+  original_vars = c(confounders, exposures, biomarkers)
+)
+
+selection_table$group <- case_when(
+  selection_table$source_variable %in% confounders ~ "confounder",
+  selection_table$source_variable %in% biomarkers  ~ "biomarker",
+  selection_table$source_variable %in% exposures   ~ "exposure",
+  TRUE ~ "unknown"
+)
+
+write.csv(
+  selection_table,
+  file.path(out_dir, "selection_proportions.csv"),
+  row.names = FALSE
+)
+
+# Selected features above threshold
+selected_features_final <- selection_table %>%
+  filter(selection_proportion >= selection_threshold)
+
+write.csv(
+  selected_features_final,
+  file.path(out_dir, "selected_features_threshold.csv"),
+  row.names = FALSE
+)
+
+# Selected source variables above threshold
+selected_variables_final <- selected_features_final %>%
+  filter(!is.na(source_variable)) %>%
+  distinct(source_variable, group) %>%
+  arrange(group, source_variable)
+
+write.csv(
+  selected_variables_final,
+  file.path(out_dir, "selected_variables_threshold.csv"),
+  row.names = FALSE
+)
+
+# =========================================================
+# 8) Plot selection proportions
+# =========================================================
+
+plot_n <- min(50, nrow(selection_table))
+
+plot_df <- selection_table %>%
+  slice_max(order_by = selection_proportion, n = plot_n)
+
+plot_df$feature <- factor(plot_df$feature, levels = rev(plot_df$feature))
+
+p_sel <- ggplot(plot_df, aes(x = selection_proportion, y = feature, color = group)) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = selection_threshold, linetype = 2) +
+  labs(
+    title = "Stability selection proportions",
+    subtitle = paste0(
+      "Top ", plot_n,
+      " encoded features; threshold = ", selection_threshold
+    ),
+    x = "Selection proportion",
+    y = NULL
+  ) +
+  theme_bw()
+
+ggsave(
+  filename = file.path(out_dir, "selection_proportions_plot.png"),
+  plot = p_sel,
+  width = 10,
+  height = 12,
+  dpi = 300
+)
+
+# =========================================================
+# 9) Save main objects
+# =========================================================
+
+saveRDS(
+  list(
+    selected_list = selected_list,
+    lambda_list = lambda_list,
+    selection_table = selection_table,
+    selected_features_final = selected_features_final,
+    selected_variables_final = selected_variables_final,
+    penalty_factor = penalty_factor,
+    confounders = confounders,
+    exposures = exposures,
+    biomarkers = biomarkers,
+    selection_threshold = selection_threshold,
+    x_columns = colnames(x_mat)
+  ),
+  file.path(out_dir, "stability_selection_results.rds")
+)
+
+# =========================================================
+# 10) Console summary
+# =========================================================
+
+cat("\n====================================================\n")
+cat("Stability selection completed\n")
+cat("====================================================\n")
+cat("Selection dataset rows:", nrow(df_sel), "\n")
+cat("Number of encoded features:", ncol(x_mat), "\n")
+cat("Selection threshold:", selection_threshold, "\n")
+cat("Number of selected encoded features:", nrow(selected_features_final), "\n")
+cat("Number of selected source variables:", nrow(selected_variables_final), "\n")
+cat("Output directory:\n", out_dir, "\n")
+cat("====================================================\n\n")
+
+print(selected_variables_final)

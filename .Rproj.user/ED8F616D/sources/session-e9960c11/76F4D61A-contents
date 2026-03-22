@@ -1,0 +1,33 @@
+# ============================================================
+# config.yaml - Missingness Analysis
+# ============================================================
+# Edit paths and parameters here before running the script.
+# Do not commit this file if paths contain sensitive info.
+# ============================================================
+
+paths:
+  data:         "/rds/general/project/hda_25-26/live/TDS/TDS_Group4/00_data/01_processed/ukb_final_cleaned.rds"
+  output_dir:   "/rds/general/project/hda_25-26/live/TDS/TDS_Group4/02_results/reports/missingness"
+  category_map: "/rds/general/project/hda_25-26/live/TDS/TDS_Group4/02_results/reports/missingness/variable_category.csv"
+
+parameters:
+  seed: 1
+
+  nonresponse_levels:
+    - "Prefer not to answer"
+    - "Do not know"
+    - "Unsure"
+
+  high_missing_threshold: 20
+  structural_threshold:   20
+  structural_cutoff:      0.95
+
+  gatekeepers:
+    - "sex"
+    - "age"
+    - "recruitment_date"
+    - "ethnicity"
+    - "employment"
+
+  heatmap_n_participants: 200
+

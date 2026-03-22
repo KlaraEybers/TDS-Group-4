@@ -1,0 +1,288 @@
+rm(list = ls())
+
+# Import packages ---------------------------------------------------------
+
+library(here)
+library(dplyr)
+
+
+# Import data -------------------------------------------------------------
+
+ukb_clean <- readRDS(here("00_data", "01_processed", "ukb_initial_cleaned.rds"))
+
+# Extract relevant columns ------------------------------------------------
+
+# Pattern to match diet and alcohol variables
+pattern <- paste(c(
+  "alcohol_intake_freq", "former_alc", "alcohol_status",
+  "cooked_veg", "fresh_fruit", "salad_raw_veg",
+  "coffee", "tea", "oily_fish",
+  "processed_meat", "poultry", "beef", "lamb_mutton", "pork",
+  "bread_slices_week", "bread_type", "cereaL_bowls_week", "cereal_type",
+  "salt_added", "water_glasses_week"
+), collapse = "|")
+
+
+# Extract all columns that match any of these patterns
+matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
+
+# Select relevant columnns
+selected_data <- ukb_clean %>% select(eid, all_of(matching_cols))
+
+
+# Diet Score --------------------------------------------------------------
+
+# Reference: https://www.mdpi.com/2072-6643/15/6/1344#app1-nutrients-15-01344
+# Diet score (0-8): 8 components (fruit, veg, fish, processed meat, red meat, 
+# whole grains, refined grains, salt). Scored 1 if meeting threshold, 0 otherwise.
+# Requires ≥6/8 components, proportionally scaled to 0-8 if components missing.
+
+diet_clean <- selected_data %>%
+  mutate(
+    # -------------------------------------------------------------------------
+    # 1. CONVERT TO NUMERIC SERVINGS
+    # -------------------------------------------------------------------------
+    
+    # Vegetables (servings/day - convert "Less than one" to 0.5, rest to numeric)
+    cooked_veg_daily = case_when(
+      cooked_veg.0.0 == "Less than one" ~ 0.5,
+      cooked_veg.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ suppressWarnings(as.numeric(cooked_veg.0.0))
+    ),
+    
+    salad_raw_veg_daily = case_when(
+      salad_raw_veg.0.0 == "Less than one" ~ 0.5,
+      salad_raw_veg.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ suppressWarnings(as.numeric(salad_raw_veg.0.0))
+    ),
+    # Fresh fruit (servings/day)
+    fresh_fruit_daily = case_when(
+      fresh_fruit.0.0 == "Less than one" ~ 0.5,
+      fresh_fruit.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ suppressWarnings(as.numeric(fresh_fruit.0.0))
+    ),
+    
+    # Bread slices (per week - convert to daily)
+    bread_slices_daily = case_when(
+      bread_slices_week.0.0 == "Less than one" ~ 0.5 / 7,
+      bread_slices_week.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ suppressWarnings(as.numeric(bread_slices_week.0.0)) / 7
+    ),
+    
+    # Cereal bowls (per week - convert to daily)
+    cereal_bowls_daily = case_when(
+      cereaL_bowls_week.0.0 == "Less than one" ~ 0.5 / 7,
+      cereaL_bowls_week.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ suppressWarnings(as.numeric(cereaL_bowls_week.0.0)) / 7
+    ),
+    # Meats and fish (already in servings/week from recoding)
+    beef_weekly = case_when(
+      beef.0.0 == "half" ~ 0.5,
+      beef.0.0 == "5+" ~ 5.5,
+      TRUE ~ suppressWarnings(as.numeric(as.character(beef.0.0)))
+    ),
+    
+    lamb_mutton_weekly = case_when(
+      lamb_mutton.0.0 == "half" ~ 0.5,
+      lamb_mutton.0.0 == "5+" ~ 5.5,
+      TRUE ~ suppressWarnings(as.numeric(as.character(lamb_mutton.0.0)))
+    ),
+    
+    pork_weekly = case_when(
+      pork.0.0 == "half" ~ 0.5,
+      pork.0.0 == "5+" ~ 5.5,
+      TRUE ~ suppressWarnings(as.numeric(as.character(pork.0.0)))
+    ),
+    oily_fish_weekly = case_when(
+      oily_fish.0.0 == "half" ~ 0.5,
+      oily_fish.0.0 == "5+" ~ 5.5,
+      TRUE ~ suppressWarnings(as.numeric(as.character(oily_fish.0.0)))
+    ),
+    
+    # Processed meat (already frequency categories - convert to servings/week)
+    processed_meat_weekly = case_when(
+      processed_meat.0.0 == "Never" ~ 0,
+      processed_meat.0.0 == "Less than once a week" ~ 0.5,
+      processed_meat.0.0 == "Once a week" ~ 1,
+      processed_meat.0.0 == "2-4 times a week" ~ 3,
+      processed_meat.0.0 == "5-6 times a week" ~ 5.5,
+      processed_meat.0.0 == "Once or more daily" ~ 7,
+      processed_meat.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ NA_real_
+    ),
+    # -------------------------------------------------------------------------
+    # 2. CREATE COMPOSITE FOOD GROUPS
+    # -------------------------------------------------------------------------
+    
+    # Total vegetables (servings/day) - need at least one component
+    total_veg_daily = case_when(
+      !is.na(cooked_veg_daily) & !is.na(salad_raw_veg_daily) ~ 
+        (cooked_veg_daily / 2) + (salad_raw_veg_daily / 2),  # 2 tablespoons = 1 serving
+      !is.na(cooked_veg_daily) ~ cooked_veg_daily / 2,
+      !is.na(salad_raw_veg_daily) ~ salad_raw_veg_daily / 2,
+      TRUE ~ NA_real_
+    ),
+    
+    # Total fruit (servings/day) - just fresh fruit
+    total_fruit_daily = fresh_fruit_daily,  # Already in servings
+    # Red meat (servings/week)
+    red_meat_weekly = case_when(
+      !is.na(beef_weekly) & !is.na(lamb_mutton_weekly) & !is.na(pork_weekly) ~
+        beef_weekly + lamb_mutton_weekly + pork_weekly,
+      !is.na(beef_weekly) & !is.na(lamb_mutton_weekly) ~
+        beef_weekly + lamb_mutton_weekly,
+      !is.na(beef_weekly) & !is.na(pork_weekly) ~
+        beef_weekly + pork_weekly,
+      !is.na(lamb_mutton_weekly) & !is.na(pork_weekly) ~
+        lamb_mutton_weekly + pork_weekly,
+      !is.na(beef_weekly) ~ beef_weekly,
+      !is.na(lamb_mutton_weekly) ~ lamb_mutton_weekly,
+      !is.na(pork_weekly) ~ pork_weekly,
+      TRUE ~ NA_real_
+    ),
+    
+    # Total fish (servings/week) - just oily fish
+    total_fish_weekly = oily_fish_weekly,
+    # Whole grains (servings/day)
+    whole_grain_bread_daily = case_when(
+      bread_type.0.0 == "Wholemeal or wholegrain" ~ bread_slices_daily,
+      bread_type.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ 0
+    ),
+    
+    whole_grain_cereal_daily = case_when(
+      cereal_type.0.0 %in% c("Bran cereal (e.g. All Bran, Branflakes)",
+                             "Oat cereal (e.g. Ready Brek, porridge)",
+                             "Muesli") ~ cereal_bowls_daily,
+      cereal_type.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ 0
+    ),
+    whole_grains_daily = case_when(
+      !is.na(whole_grain_bread_daily) & !is.na(whole_grain_cereal_daily) ~
+        whole_grain_bread_daily + whole_grain_cereal_daily,
+      !is.na(whole_grain_bread_daily) ~ whole_grain_bread_daily,
+      !is.na(whole_grain_cereal_daily) ~ whole_grain_cereal_daily,
+      TRUE ~ NA_real_
+    ),
+    
+    # Refined grains (servings/day)
+    refined_grain_bread_daily = case_when(
+      bread_type.0.0 %in% c("White", "Brown", "Other type of bread") ~ bread_slices_daily,
+      bread_type.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ 0
+    ),
+    
+    refined_grain_cereal_daily = case_when(
+      cereal_type.0.0 %in% c("Biscuit cereal (e.g. Weetabix)",
+                             "Other (e.g. Cornflakes, Frosties)") ~ cereal_bowls_daily,
+      cereal_type.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ 0
+    ),
+    refined_grains_daily = case_when(
+      !is.na(refined_grain_bread_daily) & !is.na(refined_grain_cereal_daily) ~
+        refined_grain_bread_daily + refined_grain_cereal_daily,
+      !is.na(refined_grain_bread_daily) ~ refined_grain_bread_daily,
+      !is.na(refined_grain_cereal_daily) ~ refined_grain_cereal_daily,
+      TRUE ~ NA_real_
+    ),
+    # -------------------------------------------------------------------------
+    # 3. CREATE DIET SCORE (0-8 POINTS)
+    # -------------------------------------------------------------------------
+    
+    # Individual score components
+    score_fruit = ifelse(!is.na(total_fruit_daily) & total_fruit_daily >= 4, 1, 0),
+    score_veg = ifelse(!is.na(total_veg_daily) & total_veg_daily >= 4, 1, 0),
+    score_fish = ifelse(!is.na(total_fish_weekly) & total_fish_weekly >= 2, 1, 0),
+    score_processed_meat = ifelse(!is.na(processed_meat_weekly) & processed_meat_weekly <= 1, 1, 0),
+    score_red_meat = ifelse(!is.na(red_meat_weekly) & red_meat_weekly <= 1.5, 1, 0),
+    score_whole_grains = ifelse(!is.na(whole_grains_daily) & whole_grains_daily >= 3, 1, 0),
+    score_refined_grains = ifelse(!is.na(refined_grains_daily) & refined_grains_daily <= 1.5, 1, 0),
+    score_salt = case_when(
+      salt_added.0.0 == "Never/rarely" ~ 1,
+      salt_added.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      TRUE ~ 0
+    ),
+    # Total diet score (0-8)
+    diet_score = score_fruit + score_veg + score_fish + score_processed_meat + 
+      score_red_meat + score_whole_grains + score_refined_grains + score_salt,
+    )
+
+
+# Diet score NAs ----------------------------------------------------------
+
+# Count non-missing components
+diet_clean <- diet_clean %>%
+  mutate(
+    n_components = (!is.na(score_fruit)) + (!is.na(score_veg)) + 
+      (!is.na(score_fish)) + (!is.na(score_processed_meat)) +
+      (!is.na(score_red_meat)) + (!is.na(score_whole_grains)) + 
+      (!is.na(score_refined_grains)) + (!is.na(score_salt)),
+    
+    # Diet score: scale to 0-8 if at least 6 components available
+    diet_score_raw = rowSums(cbind(score_fruit, score_veg, score_fish, 
+                                   score_processed_meat, score_red_meat, 
+                                   score_whole_grains, score_refined_grains, 
+                                   score_salt), 
+                             na.rm = TRUE),
+    
+    diet_score = case_when(
+      n_components >= 6 ~ (diet_score_raw / n_components) * 8,  # Scale to 0-8
+      TRUE ~ NA_real_
+    )
+  )
+
+# Keep only diet score and alcohol variables
+diet_clean <- diet_clean %>%
+  select(eid,
+         diet_score, 
+         alcohol_intake_freq.0.0, 
+         former_alc.0.0, 
+         alcohol_status.0.0)
+
+
+# Alcohol -----------------------------------------------------------------
+
+# Alcohol: 5 categories based on frequency
+# Never, Former, Social, Moderate, Daily
+# Reference: https://www.thelancet.com/journals/eclinm/article/PIIS2589-5370(20)30402-8/fulltext
+# Hierarchy: (1) Never drinker status, (2) Former drinker status, 
+# (3) Current frequency (special occasions/1-3x month = social; 1-2x/week = moderate; 3+x/week = daily)
+# NA only if all three source variables are "Prefer not to answer"
+
+# Create alcohol consumption variable (revised hierarchy)
+diet_clean <- diet_clean %>%
+  mutate(
+    alcohol_consumption = case_when(
+      # PRIORITY 1: Current drinking frequency
+      alcohol_intake_freq.0.0 %in% c("Special occasions only", "One to three times a month") ~ 
+        "Social drinker",
+      alcohol_intake_freq.0.0 == "Once or twice a week" ~ 
+        "Moderate drinker",
+      alcohol_intake_freq.0.0 %in% c("Three or four times a week", "Daily or almost daily") ~ 
+        "Daily drinker",
+      
+      # PRIORITY 2: If frequency = "Never", check former_alc to distinguish never vs former
+      alcohol_intake_freq.0.0 == "Never" & former_alc.0.0 == "Yes" ~ "Former drinker",
+      alcohol_intake_freq.0.0 == "Never" & former_alc.0.0 == "No" ~ "Never drinker",
+      alcohol_intake_freq.0.0 == "Never" & is.na(former_alc.0.0) ~ "Never drinker",  # Default to never if former_alc missing
+      
+      # Handle prefer not to answer
+      alcohol_intake_freq.0.0 == "Prefer not to answer" & 
+        former_alc.0.0 == "Prefer not to answer" ~ NA_character_,
+      
+      TRUE ~ NA_character_
+    ),
+    
+    alcohol_consumption = factor(alcohol_consumption, 
+                                 levels = c("Never drinker", "Former drinker", 
+                                            "Social drinker", "Moderate drinker", 
+                                            "Daily drinker"))
+  )
+
+# Drop original alcohol columns
+diet_clean <- diet_clean %>%
+  select(-alcohol_intake_freq.0.0, -former_alc.0.0, -alcohol_status.0.0)
+
+# Save RDS ----------------------------------------------------------------
+
+saveRDS(diet_clean, here("00_data", "01_processed", "diet_cleaned.rds"))

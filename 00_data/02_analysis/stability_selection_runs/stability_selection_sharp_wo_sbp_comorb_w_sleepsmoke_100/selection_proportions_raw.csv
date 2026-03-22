@@ -1,0 +1,81 @@
+"feature","selection_proportion"
+"household_income18-31k",0.12
+"household_income31-52k",0.07
+"household_income52-100k",0.12
+"household_income>100k",0
+"highest_qualificationCSEs",0.07
+"highest_qualificationO-levels/GCSEs",0.21
+"highest_qualificationProfessional (nursing/teaching)",0.02
+"highest_qualificationVocational (NVQ/HND/HNC)",0.04
+"highest_qualificationA-levels",0.06
+"highest_qualificationUniversity degree",0.02
+"employmentRetired",0.05
+"employmentOther economically inactive",0.04
+"employmentUnemployed",0.67
+"employmentUnable to work",0.35
+"housingRenter",0.45
+"housingOther",0.07
+"household_size2 people",0.02
+"household_size3-5 people",0.06
+"household_size6+ people",0.06
+"diet_score",0.07
+"alcohol_consumptionFormer drinker",0.22
+"alcohol_consumptionSocial drinker",0.13
+"alcohol_consumptionModerate drinker",0.19
+"alcohol_consumptionDaily drinker",0.06
+"salt_addedSometimes",0.41
+"salt_addedUsually",0.01
+"salt_addedAlways",0.04
+"sleep_hrs",0.1
+"sleep_catShort",0.02
+"sleep_catLong",0.12
+"insomniaSometimes",0.01
+"insomniaUsually",0.07
+"smoking_status_refinedFormer_Recent",0.07
+"smoking_status_refinedFormer_Long",0.67
+"smoking_status_refinedCurrent",0.02
+"pack_yrs",0.02
+"passive_total_hrs",0.14
+"passive_catLow",0
+"passive_catHigh",0.04
+"met_min_week_all",0.04
+"mh_sought_helpYes",0.03
+"work_job_satisfaction_num",0.09
+"neuroticism_score",0.08
+"breastfedYes",0.04
+"comparative_body_size_10About average",0.28
+"comparative_body_size_10Plumper",0.02
+"maternal_smoking_birthYes",0.14
+"birth_weight",0.06
+"no2_2010",0.14
+"pm2.5_2010",0.01
+"pm10_2010",0.04
+"urban_rural_3lvlTown",0.17
+"urban_rural_3lvlRural",0.02
+"dbp",0.2
+"grip_strength",0.04
+"whr",0.28
+"heel_bone_density",0.01
+"body_fat_mass",0.06
+"wbc",0.06
+"platelets",0.1
+"albumin",0.04
+"alp",0.24
+"alt",0.05
+"apoa1",0.03
+"apob",0.07
+"ast",0.11
+"bilirubin",0.28
+"total_cholesterol",0.15
+"creatinine",0.08
+"crp",0.73
+"cystatin_c",0.08
+"ggt",0.1
+"hba1c",0.25
+"hdl_cholesterol",0.06
+"ldl_direct",0
+"lpa",0.25
+"triglycerides",0.72
+"neutrophill_count",0.07
+"lymphocyte_count",0.05
+"monocyte_count",0.12

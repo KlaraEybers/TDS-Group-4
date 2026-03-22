@@ -1,0 +1,274 @@
+# OPTION 1
+
+#PBS -N ukb_impute_rf
+#PBS -l select=1:ncpus=128:ompthreads=128:mem=100gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o impute_rf.out
+
+rm(list = ls())
+
+# =========================================================
+# 11) RANDOM-FOREST IMPUTATION (PARALLEL) USING futuremice + mice
+# =========================================================
+
+library(here)
+library(dplyr)
+library(mice)
+library(future)
+library(futuremice)
+library(lubridate)
+
+# -----------------------------
+# 0) Parallel setup
+# -----------------------------
+n_cores <- future::availableCores()
+
+# On HPC (Linux), multisession is robust; adjust if your cluster policy prefers multicore.
+future::plan(multisession, workers = n_cores)
+
+# -----------------------------
+# 1) Load final cleaned dataset
+# -----------------------------
+ukb <- readRDS(here("00_data", "01_processed", "ukb_final_cleaned.rds"))
+
+# Ensure eid exists and is NOT imputed
+if (!("eid" %in% names(ukb))) stop("eid column not found in ukb_final_cleaned.rds")
+
+# -----------------------------
+# 2) Type handling before mice
+#    - Convert character -> factor (mice rf expects categorical as factor)
+#    - Convert Date -> numeric (days) for imputation, then convert back
+# -----------------------------
+date_cols <- names(ukb)[vapply(ukb, inherits, logical(1), what = "Date")]
+
+ukb_pre <- ukb %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(all_of(date_cols), ~ as.numeric(.)))  # Date -> days since origin
+
+# -----------------------------
+# 3) Define imputation methods and predictor matrix
+# -----------------------------
+meth <- make.method(ukb_pre)
+pred <- make.predictorMatrix(ukb_pre)
+
+# Do not impute eid; also do not use eid to predict others (identifier)
+meth["eid"] <- ""
+pred["eid", ] <- 0
+pred[, "eid"] <- 0
+
+# Random forest imputation for all other columns
+# (mice will handle factors/numerics accordingly via method = "rf")
+meth[meth != ""] <- "rf"
+
+# -----------------------------
+# 4) Run parallel RF imputation
+# -----------------------------
+set.seed(1)
+
+imp <- futuremice(
+  data = ukb_pre,
+  m = 5,           # number of imputed datasets
+  maxit = 5,       # iterations
+  method = meth,
+  predictorMatrix = pred,
+  printFlag = TRUE
+)
+
+# Save the full mids object (contains all m imputations)
+saveRDS(imp, here("00_data", "01_processed", "ukb_imputed_mids_rf.rds"))
+
+# -----------------------------
+# 5) Export one completed dataset (action = 1) and restore Date columns
+# -----------------------------
+ukb_imputed <- complete(imp, action = 1)
+
+# Convert imputed numeric date columns back to Date (days since origin)
+# as.Date(<numeric>, origin="1970-01-01") matches as.numeric(Date) encoding
+if (length(date_cols) > 0) {
+  ukb_imputed <- ukb_imputed %>%
+    mutate(across(all_of(date_cols), ~ as.Date(.x, origin = "1970-01-01")))
+}
+
+saveRDS(ukb_imputed, here("00_data", "01_processed", "ukb_final_imputed_rf.rds"))
+
+# Optional quick check: confirm no NA remains except in eid (should have none there either)
+na_counts <- colSums(is.na(ukb_imputed))
+print(na_counts[na_counts > 0])
+
+# OPTION 2
+
+#PBS -N ukb_impute_mean
+#PBS -l select=1:ncpus=128:ompthreads=128:mem=100gb
+#PBS -l walltime=04:00:00
+#PBS -j oe
+#PBS -o impute_mean.out
+
+rm(list = ls())
+
+library(here)
+library(dplyr)
+library(future)
+
+# -----------------------------
+# 0) Parallel setup (not required for mean, kept for consistency)
+# -----------------------------
+n_cores <- future::availableCores()
+future::plan(multisession, workers = n_cores)
+
+# -----------------------------
+# 1) Load final cleaned dataset
+# -----------------------------
+ukb <- readRDS(here("00_data", "01_processed", "ukb_final_cleaned.rds"))
+if (!("eid" %in% names(ukb))) stop("eid column not found")
+
+# -----------------------------
+# 2) Identify Date columns (restore later)
+# -----------------------------
+date_cols <- names(ukb)[vapply(ukb, inherits, logical(1), what = "Date")]
+
+ukb2 <- ukb %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(all_of(date_cols), ~ as.numeric(.)))  # Date -> numeric days
+
+# -----------------------------
+# 3) Mean (numeric) + mode (factor/ordered) imputation
+# -----------------------------
+mode_value <- function(x) {
+  x2 <- x[!is.na(x)]
+  if (length(x2) == 0) return(NA)
+  tab <- table(x2)
+  names(tab)[which.max(tab)]
+}
+
+for (nm in names(ukb2)) {
+  if (nm == "eid") next
+  
+  x <- ukb2[[nm]]
+  
+  if (is.numeric(x) || is.integer(x)) {
+    m <- mean(x, na.rm = TRUE)
+    if (is.nan(m)) next
+    x[is.na(x)] <- m
+    ukb2[[nm]] <- x
+  } else if (is.factor(x) || is.ordered(x)) {
+    mv <- mode_value(x)
+    if (is.na(mv)) next
+    x[is.na(x)] <- mv
+    ukb2[[nm]] <- droplevels(x)
+  }
+}
+
+# Restore Date columns
+if (length(date_cols) > 0) {
+  ukb2 <- ukb2 %>%
+    mutate(across(all_of(date_cols), ~ as.Date(.x, origin = "1970-01-01")))
+}
+
+saveRDS(ukb2, here("00_data", "01_processed", "ukb_final_imputed_mean_mode.rds"))
+
+na_counts <- colSums(is.na(ukb2))
+print(na_counts[na_counts > 0])
+
+# OPTION 3
+
+#PBS -N ukb_impute_regression
+#PBS -l select=1:ncpus=128:ompthreads=128:mem=100gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o impute_regression.out
+
+rm(list = ls())
+
+library(here)
+library(dplyr)
+library(mice)
+library(future)
+library(futuremice)
+
+# -----------------------------
+# 0) Parallel setup
+# -----------------------------
+n_cores <- future::availableCores()
+future::plan(multisession, workers = n_cores)
+
+# -----------------------------
+# 1) Load final cleaned dataset
+# -----------------------------
+ukb <- readRDS(here("00_data", "01_processed", "ukb_final_cleaned.rds"))
+if (!("eid" %in% names(ukb))) stop("eid column not found")
+
+# -----------------------------
+# 2) Type handling for mice
+# -----------------------------
+date_cols <- names(ukb)[vapply(ukb, inherits, logical(1), what = "Date")]
+
+ukb_pre <- ukb %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(all_of(date_cols), ~ as.numeric(.)))  # Date -> numeric days
+
+# -----------------------------
+# 3) Regression-based imputation against all other variables
+#    Numeric: norm.predict (deterministic linear regression prediction)
+#    Binary factor: logreg
+#    >2-level unordered factor: polyreg
+#    Ordered factor: polr
+# -----------------------------
+meth <- make.method(ukb_pre)
+pred <- make.predictorMatrix(ukb_pre)
+
+# Do not impute eid; do not use eid as predictor
+meth["eid"] <- ""
+pred["eid", ] <- 0
+pred[, "eid"] <- 0
+
+for (nm in names(ukb_pre)) {
+  if (nm == "eid") next
+  x <- ukb_pre[[nm]]
+  
+  if (is.numeric(x) || is.integer(x)) {
+    meth[nm] <- "norm.predict"
+  } else if (is.factor(x) || is.ordered(x)) {
+    lv <- nlevels(x)
+    if (is.ordered(x)) {
+      meth[nm] <- "polr"
+    } else if (lv == 2) {
+      meth[nm] <- "logreg"
+    } else if (lv > 2) {
+      meth[nm] <- "polyreg"
+    } else {
+      meth[nm] <- ""  # degenerate factor
+    }
+  } else {
+    meth[nm] <- ""    # unsupported type
+  }
+}
+
+# -----------------------------
+# 4) Run parallel mice
+# -----------------------------
+set.seed(1)
+
+imp <- futuremice(
+  data = ukb_pre,
+  m = 5,
+  maxit = 5,
+  method = meth,
+  predictorMatrix = pred,
+  printFlag = TRUE
+)
+
+saveRDS(imp, here("00_data", "01_processed", "ukb_imputed_mids_regression.rds"))
+
+ukb_imputed <- complete(imp, action = 1)
+
+# Restore Date columns
+if (length(date_cols) > 0) {
+  ukb_imputed <- ukb_imputed %>%
+    mutate(across(all_of(date_cols), ~ as.Date(.x, origin = "1970-01-01")))
+}
+
+saveRDS(ukb_imputed, here("00_data", "01_processed", "ukb_final_imputed_regression.rds"))
+
+na_counts <- colSums(is.na(ukb_imputed))
+print(na_counts[na_counts > 0])

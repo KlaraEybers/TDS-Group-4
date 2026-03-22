@@ -1,0 +1,50 @@
+"feature","selection_proportion"
+"household_income18-31k",0.02
+"household_income31-52k",0.04
+"household_income52-100k",0.2
+"household_income>100k",0.01
+"highest_qualificationCSEs",0
+"highest_qualificationO-levels/GCSEs",0.02
+"highest_qualificationProfessional (nursing/teaching)",0.01
+"highest_qualificationVocational (NVQ/HND/HNC)",0.02
+"highest_qualificationA-levels",0.02
+"highest_qualificationUniversity degree",0
+"employmentRetired",0.05
+"employmentOther economically inactive",0.01
+"employmentUnemployed",0.05
+"employmentUnable to work",0.01
+"housingRenter",0.01
+"housingOther",0
+"household_size2 people",0.02
+"household_size3-5 people",0
+"household_size6+ people",0.06
+"diet_score",0.08
+"alcohol_consumptionFormer drinker",0
+"alcohol_consumptionSocial drinker",0.05
+"alcohol_consumptionModerate drinker",0
+"alcohol_consumptionDaily drinker",0.05
+"salt_addedSometimes",0
+"salt_addedUsually",0
+"salt_addedAlways",0.06
+"sleep_hrs",0.07
+"insomniaSometimes",0
+"insomniaUsually",0.01
+"smoking_status_refinedFormer_Recent",0.01
+"smoking_status_refinedFormer_Long",0
+"smoking_status_refinedCurrent",0.01
+"pack_yrs",0.01
+"passive_total_hrs",0.02
+"met_min_week_all",0.01
+"mh_sought_helpYes",0.01
+"work_job_satisfaction_num",0.02
+"neuroticism_score",0.01
+"breastfedYes",0
+"comparative_body_size_10About average",0.13
+"comparative_body_size_10Plumper",0.05
+"maternal_smoking_birthYes",0.04
+"birth_weight",0.02
+"no2_2010",0.01
+"pm2.5_2010",0.98
+"pm10_2010",0.01
+"urban_rural_3lvlTown",0
+"urban_rural_3lvlRural",0

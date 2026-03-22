@@ -1,0 +1,13 @@
+{
+    "sortOrder": [
+        {
+            "columnIndex": 2,
+            "ascending": true
+        },
+        {
+            "columnIndex": 4,
+            "ascending": true
+        }
+    ],
+    "path": "/rds/general/user/hae125/home/../projects/hda_25-26/live/TDS/TDS_Group4/00_data/02_analysis/stability_selection_runs"
+}

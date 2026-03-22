@@ -1,0 +1,13 @@
+
+*.rds
+!cvd_events.rds
+!.gitkeep
+
+.RData
+.Rhistory
+
+extraction_and_recoding/
+
+archive/
+
+02_results/00_figures/*

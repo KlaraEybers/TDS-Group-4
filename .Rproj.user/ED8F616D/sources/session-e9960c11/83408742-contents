@@ -1,0 +1,226 @@
+# =============================================================================
+# CVD Logistic Regression Analysis
+# Includes: Univariate, Three Models, ROC/AUC Comparison, Forest Plot
+# =============================================================================
+
+# 1. LOAD PACKAGES -------------------------------------------------------------
+library(dplyr)
+library(broom)
+library(pROC)
+library(ggplot2)
+
+# 2. LOAD DATA -----------------------------------------------------------------
+
+
+# 3. PREPARE VARIABLES ---------------------------------------------------------
+
+# Recode outcome if needed (skip if already 0/1 integer)
+# df$has_cvd <- ifelse(df$has_cvd == "Yes", 1, 0)
+
+df <- df %>%
+  mutate(
+    has_cvd                  = as.integer(has_cvd),
+    sex                      = as.factor(sex),
+    ethnicity                = as.factor(ethnicity),
+    highest_qualification    = as.factor(highest_qualification),
+    employment               = as.factor(employment),
+    smoking_status_refined   = as.factor(smoking_status_refined),
+    passive_cat              = as.factor(passive_cat),
+    insomnia                 = as.factor(insomnia),
+    snoring                  = as.factor(snoring),
+    urban_rural_3lvl         = as.factor(urban_rural_3lvl)
+  )
+
+# 4. DEFINE VARIABLE GROUPS ----------------------------------------------------
+
+bio_vars <- c(
+  "age", "sex", "ethnicity",
+  "sbp", "dbp", "whr", "body_fat_mass",
+  "hdl_cholesterol", "ldl_direct", "triglycerides",
+  "hba1c", "crp"
+)
+
+expo_vars <- c(
+  "age", "sex", "ethnicity",
+  "household_income", "highest_qualification", "employment",
+  "diet_score", "alcohol_consumption",
+  "sleep_hrs", "insomnia", "snoring",
+  "smoking_status_refined", "pack_yrs", "passive_cat",
+  "met_min_week_all",
+  "no2_2010", "pm2.5_2010", "pm10_2010",
+  "urban_rural_3lvl"
+)
+
+combined_vars <- c(
+  "age", "sex", "ethnicity",
+  "sbp", "dbp", "whr",
+  "hdl_cholesterol", "ldl_direct", "triglycerides",
+  "hba1c", "crp",
+  "household_income",
+  "diet_score",
+  "smoking_status_refined", "pack_yrs",
+  "met_min_week_all",
+  "pm2.5_2010", "urban_rural_3lvl"
+)
+
+# 5. UNIVARIATE LOGISTIC REGRESSION --------------------------------------------
+
+candidate_vars <- c(
+  "age", "sex", "ethnicity", "household_income", "highest_qualification",
+  "employment", "housing", "household_size", "has_vehicle",
+  "sbp", "dbp", "grip_strength", "whr", "heel_bone_density",
+  "body_fat_mass", "diet_score", "alcohol_consumption", "salt_added",
+  "sleep_hrs", "sleep_cat", "insomnia", "snoring",
+  "smoking_status_refined", "pack_yrs", "passive_cat",
+  "met_min_week_all", "long_ill", "diabetes_doctor_diagnosed",
+  "age_high_bp_dx", "early_insulin", "pregnancy",
+  "n_previous_pregnancies_collapsed", "mh_sought_help",
+  "work_job_satisfaction_num", "neuroticism_score",
+  "breastfed", "comparative_body_size_10", "maternal_smoking_birth",
+  "birth_weight", "no2_2010", "pm2.5_2010", "pm10_2010",
+  "urban_rural_3lvl", "wbc", "platelets", "albumin", "alp", "alt",
+  "apoa1", "apob", "ast", "bilirubin", "total_cholesterol",
+  "creatinine", "crp", "cystatin_c", "ggt", "hba1c",
+  "hdl_cholesterol", "ldl_direct", "lpa", "triglycerides"
+)
+
+# Filter to only variables present in df
+candidate_vars <- candidate_vars[candidate_vars %in% names(df)]
+
+cat("Running univariate logistic regression...\n")
+
+univariate_results <- lapply(candidate_vars, function(v) {
+  tryCatch({
+    form  <- as.formula(paste("has_cvd ~", v))
+    model <- glm(form, data = df, family = binomial)
+    tidy(model, conf.int = TRUE, exponentiate = TRUE) %>%
+      filter(term != "(Intercept)") %>%
+      mutate(variable = v)
+  }, error = function(e) {
+    message("Skipping variable: ", v, " — ", e$message)
+    NULL
+  })
+}) %>%
+  bind_rows()
+
+cat("\nTop univariate results (by p-value):\n")
+print(
+  univariate_results %>%
+    select(variable, term, estimate, conf.low, conf.high, p.value) %>%
+    arrange(p.value),
+  n = 20
+)
+
+# 6. FIT THREE MULTIVARIABLE MODELS --------------------------------------------
+
+cat("\nFitting Model A: Biological...\n")
+form_bio    <- as.formula(paste("has_cvd ~", paste(bio_vars,      collapse = " + ")))
+model_bio   <- glm(form_bio,      data = df, family = binomial)
+
+cat("Fitting Model B: Exposome...\n")
+form_expo   <- as.formula(paste("has_cvd ~", paste(expo_vars,     collapse = " + ")))
+model_expo  <- glm(form_expo,     data = df, family = binomial)
+
+cat("Fitting Model C: Combined...\n")
+form_combined  <- as.formula(paste("has_cvd ~", paste(combined_vars, collapse = " + ")))
+model_combined <- glm(form_combined, data = df, family = binomial)
+
+# 7. EXTRACT ODDS RATIOS -------------------------------------------------------
+
+extract_or <- function(model) {
+  tidy(model, conf.int = TRUE, exponentiate = TRUE) %>%
+    select(term, estimate, conf.low, conf.high, p.value) %>%
+    rename(OR = estimate, CI_low = conf.low, CI_high = conf.high, p = p.value)
+}
+
+or_bio      <- extract_or(model_bio)
+or_expo     <- extract_or(model_expo)
+or_combined <- extract_or(model_combined)
+
+cat("\n--- Odds Ratios: Biological Model ---\n");      print(or_bio)
+cat("\n--- Odds Ratios: Exposome Model ---\n");        print(or_expo)
+cat("\n--- Odds Ratios: Combined Model ---\n");        print(or_combined)
+
+# 8. ROC / AUC COMPARISON ------------------------------------------------------
+
+df$pred_bio      <- predict(model_bio,      type = "response")
+df$pred_expo     <- predict(model_expo,     type = "response")
+df$pred_combined <- predict(model_combined, type = "response")
+
+roc_bio      <- roc(df$has_cvd, df$pred_bio)
+roc_expo     <- roc(df$has_cvd, df$pred_expo)
+roc_combined <- roc(df$has_cvd, df$pred_combined)
+
+model_comparison <- data.frame(
+  Model = c("Biological", "Exposome", "Combined"),
+  AUC   = round(c(
+    as.numeric(auc(roc_bio)),
+    as.numeric(auc(roc_expo)),
+    as.numeric(auc(roc_combined))
+  ), 4)
+)
+
+cat("\n--- AUC Comparison ---\n")
+print(model_comparison)
+
+# ROC curve plot
+plot(roc_bio,
+     main = "ROC Curves for CVD Models",
+     col  = "#2196F3", lwd = 2)
+plot(roc_expo,     add = TRUE, col = "#4CAF50", lwd = 2)
+plot(roc_combined, add = TRUE, col = "#F44336", lwd = 2)
+legend(
+  "bottomright",
+  legend = c(
+    paste0("Biological  AUC = ", round(auc(roc_bio),      3)),
+    paste0("Exposome    AUC = ", round(auc(roc_expo),     3)),
+    paste0("Combined    AUC = ", round(auc(roc_combined), 3))
+  ),
+  col    = c("#2196F3", "#4CAF50", "#F44336"),
+  lwd    = 2,
+  bty    = "n"
+)
+
+# 9. FOREST PLOT (COMBINED MODEL) ----------------------------------------------
+
+plot_data <- or_combined %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    sig = case_when(
+      p < 0.001 ~ "p < 0.001",
+      p < 0.01  ~ "p < 0.01",
+      p < 0.05  ~ "p < 0.05",
+      TRUE      ~ "ns"
+    ),
+    sig = factor(sig, levels = c("p < 0.001", "p < 0.01", "p < 0.05", "ns"))
+  )
+
+ggplot(plot_data, aes(x = reorder(term, OR), y = OR, colour = sig)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = CI_low, ymax = CI_high), width = 0.25, linewidth = 0.7) +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "grey50") +
+  scale_colour_manual(
+    values = c(
+      "p < 0.001" = "#D32F2F",
+      "p < 0.01"  = "#F57C00",
+      "p < 0.05"  = "#388E3C",
+      "ns"        = "#9E9E9E"
+    ),
+    name = "Significance"
+  ) +
+  coord_flip() +
+  labs(
+    title    = "Adjusted Odds Ratios — Combined Model",
+    subtitle = "Error bars = 95% confidence intervals",
+    x        = NULL,
+    y        = "Odds Ratio"
+  ) +
+  theme_bw(base_size = 12) +
+  theme(
+    plot.title    = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+
+# =============================================================================
+# END OF SCRIPT
+# =============================================================================

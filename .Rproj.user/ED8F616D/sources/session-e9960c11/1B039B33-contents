@@ -1,0 +1,137 @@
+rm(list = ls())
+
+# Packages
+library(tidyverse)
+library(here)
+
+
+# Import datasets
+ukb_full <- readRDS(here("data", "00_extracted", "ukb_cleaned.rds"))
+annot <- readRDS("extraction_and_recoding/outputs/annot.rds")
+
+# Keep only the first 10,000 participants (rows)
+ukb_10k <- ukb_full[1:10000, , drop = FALSE]
+
+# Save the 10,000-row version
+saveRDS(ukb_10k, "extraction_and_recoding/outputs/ukb_recoded_10k.rds")
+
+# -----------------------------
+# 1) Read + clean CVD events
+# -----------------------------
+cvd_events <- readRDS("cvd_events.rds")  # EDIT path
+
+cvd_cleaned <- cvd_events %>%
+  mutate(date = as.Date(date)) %>%
+  group_by(eid) %>%
+  arrange(date) %>%
+  slice(1) %>%                      # keep earliest CVD event per participant
+  ungroup() %>%
+  rename(first_cvd_date = date) %>%
+  select(eid, first_cvd_date)
+
+# -----------------------------
+# 2) Read ukb_recoded + ensure eid column exists
+# -----------------------------
+ukb <- readRDS("ukb_recoded.rds")       # EDIT path
+
+if (!("eid" %in% names(ukb))) {
+  ukb <- ukb %>% rownames_to_column("eid")
+}
+
+# -----------------------------
+# 3) Merge + add has_cvd indicator
+# -----------------------------
+ukb <- ukb %>%
+  left_join(cvd_cleaned, by = "eid") %>%
+  mutate(has_cvd = ifelse(!is.na(first_cvd_date), 1, 0))
+
+# -----------------------------
+# 4) Optional: drop participants whose first CVD occurred before baseline date
+#    (only runs if a baseline date column exists)
+# -----------------------------
+baseline_date_col <- intersect(
+  c("date_of_attending_assessment_centre", "recruitment_date", "assessment_date"),
+  names(ukb)
+)[1]
+
+if (!is.na(baseline_date_col)) {
+  ukb <- ukb %>%
+    mutate("{baseline_date_col}" := as.Date(.data[[baseline_date_col]])) %>%
+    filter(is.na(first_cvd_date) | first_cvd_date >= .data[[baseline_date_col]])
+}
+
+# ukb now contains: eid, first_cvd_date, has_cvd (plus all original variables)
+
+library(dplyr)
+
+# ---------------------------------------
+# 1) Identify all ill_onset_age columns
+# ---------------------------------------
+ill_onset_cols <- grep("^ill_onset_age", names(ukb), value = TRUE)
+
+# ---------------------------------------
+# 2) Create separate dataset containing:
+#    eid + all ill_onset_age columns
+# ---------------------------------------
+ill_onset_data <- ukb %>%
+  select(eid, all_of(ill_onset_cols))
+
+# ---------------------------------------
+# 3) Remove ill_onset_age columns from main ukb dataset
+# ---------------------------------------
+ukb <- ukb %>%
+  select(-all_of(ill_onset_cols))
+
+# ukb now no longer contains ill_onset_age columns
+# ill_onset_data contains them separately
+
+library(dplyr)
+library(stringr)
+
+# ---------------------------------------------------------
+# Keep:
+#   - Columns that do NOT follow the ".i.j" UKB instance pattern
+#   - Columns that follow the pattern AND have instance = 0
+#
+# Drop:
+#   - Columns like variable.1.n, variable.2.n, etc.
+# ---------------------------------------------------------
+
+cn <- names(ukb)
+
+# Match columns ending in ".i.j" (e.g., grip_strength_l.0.0, .1.0, .2.3, etc.)
+is_instance_pattern <- str_detect(cn, "\\.[0-9]+\\.[0-9]+$")
+
+# Extract the instance number (the first number after last dot group)
+instance_number <- str_extract(cn, "(?<=\\.)[0-9]+(?=\\.[0-9]+$)")
+
+# Keep columns that:
+#  - are NOT instance-style columns
+#  - OR are instance-style AND instance == "0"
+keep_cols <- !is_instance_pattern | instance_number == "0"
+
+# Subset dataset
+ukb <- ukb[, keep_cols, drop = FALSE]
+
+# ukb now retains:
+#   variable.0.n columns
+# and drops:
+#   variable.1.n, variable.2.n, etc.
+
+saveRDS(ukb, "ukb_cleaned.rds")
+
+library(readxl)
+
+# EDIT PATHS
+ukb_path    <- "path/to/ukb_cleaned.csv"
+annot_path  <- "path/to/annot.csv"
+domain_path <- "path/to/variable_details.xlsx"
+
+# Load data
+ukb   <- read.csv(ukb_path, check.names = FALSE)
+annot <- read.csv(annot_path, check.names = FALSE)
+var_details <- read_excel(domain_path)
+
+ukb_cleaned <- readRDS('ukb_cleaned.rds')
+
+n_total <- nrow(ukb_cleaned)

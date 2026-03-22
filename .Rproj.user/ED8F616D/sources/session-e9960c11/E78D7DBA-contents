@@ -1,0 +1,147 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+here() starts at /rds/general/project/hda_25-26/live/TDS/TDS_Group4
+Error in library(tidyverse) : there is no package called ‘tidyverse’
+Calls: suppressPackageStartupMessages -> withCallingHandlers -> library
+Execution halted

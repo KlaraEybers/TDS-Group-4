@@ -1,0 +1,55 @@
+# =============================================================================
+# .gitignore — TDS Group 4 (UK Biobank CVD Exposome Project)
+#
+# Strategy:
+#   - Track: scripts, job scripts, config, environments, README, .Rproj
+#   - Ignore: all data files, results, logs, conda envs, temp files
+#   - Preserve folder structure with .gitkeep files
+# =============================================================================
+
+# ── Data: ignore all file contents, keep folder structure ────────────────────
+00_data/**
+!00_data/**/
+!00_data/**/.gitkeep
+
+# ── Results: ignore all file contents, keep folder structure ─────────────────
+02_results/**
+!02_results/**/
+!02_results/**/.gitkeep
+
+# ── Job logs ─────────────────────────────────────────────────────────────────
+03_jobs/logs/*
+!03_jobs/logs/.gitkeep
+
+# ── R temp files ─────────────────────────────────────────────────────────────
+.Rhistory
+.RData
+.Rproj.user/
+*.Rout
+
+# ── Python temp files ────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# ── Conda / virtual environments ─────────────────────────────────────────────
+tds_group4/
+group4_python_environment/
+
+# ── OS files ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editor / IDE ─────────────────────────────────────────────────────────────
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Extraction & recoding (upstream of this pipeline) ────────────────────────
+extraction_and_recoding/
+
+# ── Archives (if any slip in) ────────────────────────────────────────────────
+archive/

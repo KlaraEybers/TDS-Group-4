@@ -1,0 +1,221 @@
+rm(list = ls())
+
+# Import packages ---------------------------------------------------------
+
+library(here)
+library(dplyr)
+
+# Import data -------------------------------------------------------------
+
+getwd()
+here::here()
+
+ukb_clean <- readRDS(here("00_data", "01_processed", "ukb_initial_cleaned.rds"))
+
+# Extract relevant columns ------------------------------------------------
+
+# Pattern to match mental health variables (coding names)
+pattern <- paste(c(
+  "freq_friend_family_visits",
+  "mh_gp",
+  "mh_psych",
+  "work_job_satisfaction",
+  "health_satisfaction",
+  "family_relationship_satisfaction",
+  "friendship_satisfaction",
+  "financial_situation_satisfaction",
+  "neuroticism_score",
+  "mood_dx"
+), collapse = "|")
+
+matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
+
+selected_data <- ukb_clean %>%
+  select(eid, all_of(matching_cols))
+
+
+# Distribution of variables (JUST FOR ME TO SEE) -----------------------------
+table(ukb_clean$freq_friend_family_visits.0.0, useNA = "ifany")
+
+table(ukb_clean$mh_gp.0.0, useNA = "ifany")
+table(ukb_clean$mh_psych.0.0, useNA = "ifany")
+
+table(ukb_clean$work_job_satisfaction.0.0, useNA = "ifany")
+table(ukb_clean$health_satisfaction.0.0, useNA = "ifany")
+table(ukb_clean$family_relationship_satisfaction.0.0, useNA = "ifany")
+table(ukb_clean$friendship_satisfaction.0.0, useNA = "ifany")
+table(ukb_clean$financial_situation_satisfaction.0.0, useNA = "ifany")
+
+table(ukb_clean$mood_dx.0.0, useNA = "ifany")
+
+# Mental health cleaning -----------------------------------------------------
+
+ukb_clean %>%
+  select(
+    freq_friend_family_visits.0.0,
+    mh_gp.0.0,
+    mh_psych.0.0,
+    work_job_satisfaction.0.0,
+    health_satisfaction.0.0,
+    family_relationship_satisfaction.0.0,
+    friendship_satisfaction.0.0,
+    financial_situation_satisfaction.0.0,
+    neuroticism_score.0.0,
+    mood_dx.0.0
+  ) %>%
+  str()
+
+mental_health_clean <- selected_data %>%
+  mutate(
+    # ----------------------------------------------------------
+    # Friend/family visits: collapse to 3 levels, (DNK/PNA -> NA)
+    # ----------------------------------------------------------
+    visits_raw = as.character(freq_friend_family_visits.0.0),
+    
+    visits_cat = case_when(
+      is.na(visits_raw) ~ NA_character_,
+      visits_raw %in% c("Do not know", "Prefer not to answer") ~ NA_character_,
+      
+      visits_raw %in% c("Almost daily", "2-4 times a week") ~ "High",
+      visits_raw %in% c("About once a week", "About once a month") ~ "Moderate",
+      visits_raw %in% c("Once every few months",
+                        "Never or almost never",
+                        "No friends/family outside household") ~ "Low",
+      
+      TRUE ~ NA_character_
+    ),
+    
+    visits_cat = factor(visits_cat, levels = c("High", "Moderate", "Low")),
+    
+    # ----------------------------------------------------------
+    # Seen GP / Psychiatrist (combine -> binary variable 'sought help'), (DNK/PNA -> NA)
+    # ----------------------------------------------------------
+    mh_gp_clean = case_when(
+      mh_gp.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_character_,
+      mh_gp.0.0 %in% c("Yes", "No") ~ as.character(mh_gp.0.0),
+      TRUE ~ NA_character_
+    ),
+    
+    mh_psych_clean = case_when(
+      mh_psych.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_character_,
+      mh_psych.0.0 %in% c("Yes", "No") ~ as.character(mh_psych.0.0),
+      TRUE ~ NA_character_
+    ),
+    
+    mh_sought_help = case_when(
+      mh_gp_clean == "Yes" | mh_psych_clean == "Yes" ~ "Yes",
+      (mh_gp_clean == "No" | mh_psych_clean == "No") &
+        !(mh_gp_clean == "Yes" | mh_psych_clean == "Yes") ~ "No",
+      TRUE ~ NA_character_
+    ),
+    
+    mh_sought_help = factor(mh_sought_help, levels = c("No", "Yes")),
+    
+    # ----------------------------------------------------------
+    # Satisfaction composite (mean of 4)
+    # ----------------------------------------------------------
+    work_job_satisfaction_num = case_when(
+      work_job_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      work_job_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+      work_job_satisfaction.0.0 == "Very unhappy" ~ 1,
+      work_job_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+      work_job_satisfaction.0.0 == "Moderately happy" ~ 3,
+      work_job_satisfaction.0.0 == "Very happy" ~ 4,
+      work_job_satisfaction.0.0 == "Extremely happy" ~ 5,
+      TRUE ~ NA_real_
+    ),
+    
+    # We took out health satisfaction since it may be a collider
+    # health_satisfaction_num = case_when(
+    #   health_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+    #   health_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+    #   health_satisfaction.0.0 == "Very unhappy" ~ 1,
+    #   health_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+    #   health_satisfaction.0.0 == "Moderately happy" ~ 3,
+    #   health_satisfaction.0.0 == "Very happy" ~ 4,
+    #   health_satisfaction.0.0 == "Extremely happy" ~ 5,
+    #   TRUE ~ NA_real_
+    # ),
+    
+    family_relationship_satisfaction_num = case_when(
+      family_relationship_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      family_relationship_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+      family_relationship_satisfaction.0.0 == "Very unhappy" ~ 1,
+      family_relationship_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+      family_relationship_satisfaction.0.0 == "Moderately happy" ~ 3,
+      family_relationship_satisfaction.0.0 == "Very happy" ~ 4,
+      family_relationship_satisfaction.0.0 == "Extremely happy" ~ 5,
+      TRUE ~ NA_real_
+    ),
+    
+    friendship_satisfaction_num = case_when(
+      friendship_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      friendship_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+      friendship_satisfaction.0.0 == "Very unhappy" ~ 1,
+      friendship_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+      friendship_satisfaction.0.0 == "Moderately happy" ~ 3,
+      friendship_satisfaction.0.0 == "Very happy" ~ 4,
+      friendship_satisfaction.0.0 == "Extremely happy" ~ 5,
+      TRUE ~ NA_real_
+    ),
+    
+    financial_situation_satisfaction_num = case_when(
+      financial_situation_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+      financial_situation_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+      financial_situation_satisfaction.0.0 == "Very unhappy" ~ 1,
+      financial_situation_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+      financial_situation_satisfaction.0.0 == "Moderately happy" ~ 3,
+      financial_situation_satisfaction.0.0 == "Very happy" ~ 4,
+      financial_situation_satisfaction.0.0 == "Extremely happy" ~ 5,
+      TRUE ~ NA_real_
+    ),
+    
+    # Count how many of the 4 items are present
+    satisfaction_n = rowSums(!is.na(cbind(
+      work_job_satisfaction_num,
+      family_relationship_satisfaction_num,
+      friendship_satisfaction_num,
+      financial_situation_satisfaction_num
+    ))),
+    
+    # Mean satisfaction score: (0-5), only if >= 2 items answered
+    satisfaction_mean = ifelse(
+      satisfaction_n >= 2,
+      rowMeans(cbind(
+        work_job_satisfaction_num,
+        family_relationship_satisfaction_num,
+        friendship_satisfaction_num,
+        financial_situation_satisfaction_num
+      ), na.rm = TRUE),
+      NA_real_
+    ),
+    
+    # ----------------------------------------------------------
+    # Neuroticism score: (keep numeric; cap implausible), (-1/-3 -> NA)
+    # ----------------------------------------------------------
+    neuroticism_score = suppressWarnings(as.numeric(as.character(neuroticism_score.0.0))),
+    neuroticism_score = ifelse(neuroticism_score %in% c(-1, -3), NA, neuroticism_score),
+    # Typical UKB neuroticism score range is 0-12; cap outside -> NA
+    neuroticism_score = ifelse(!is.na(neuroticism_score) & (neuroticism_score < 0 | neuroticism_score > 12), NA, neuroticism_score)
+    
+    # NOTE: mood_dx not processed/kept due to low response (122k)
+  ) %>%
+  select(
+    eid,
+    visits_cat,
+    mh_sought_help,
+    satisfaction_mean,
+    neuroticism_score,
+  )
+
+# Save RDS ----------------------------------------------------------------
+
+saveRDS(mental_health_clean, here("00_data", "01_processed", "mental_health_cleaned.rds"))
+
+# Sanity Check ----------------------------------------------------------------
+
+summary(mental_health_clean$neuroticism_score)
+table(mental_health_clean$visits_cat, useNA = "ifany")
+table(mental_health_clean$mh_sought_help, useNA = "ifany")
+
+

@@ -42,10 +42,6 @@ out_dir       <- lasso_outcome_dir
 fig_out_dir   <- lasso_fig_dir
 tbl_out_dir   <- lasso_tbl_dir
 
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(fig_out_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(tbl_out_dir, recursive = TRUE, showWarnings = FALSE)
-
 # Helper functions --------------------------------------------------------
 
 write_csv_safe <- function(x, path, row.names = FALSE) {
@@ -236,7 +232,7 @@ out <- sharp::VariableSelection(
   penalty.factor = penalty_factor,
   verbose = FALSE,
   n_cat = 3,
-  K = 5
+  K = 300
   # Below is for confining the grid to particular region
   # ,pi_list = seq(0.65, 0.79, by = 0.01),
   # Lambda = seq(4e-04, 8e-04, length.out = 60)
@@ -463,7 +459,7 @@ png(
   res = 150
 )
 
-par(mar = c(14, 5, 2, 1))
+par(mar = c(14, 5, 4, 1))
 
 plot(
   selprop,
@@ -472,9 +468,11 @@ plot(
   las = 1,
   xlab = "",
   ylab = "Selection Proportion",
+  main = "Outcome Model: Selection Proportions",
   xaxt = "n",
   col = ifelse(selprop >= sel_threshold, "red", "#7f8c8d"),
-  cex.lab = 1.5
+  cex.lab = 1.5,
+  cex.main = 1.4
 )
 
 abline(h = sel_threshold, lty = 2, col = "darkred")
@@ -508,7 +506,7 @@ png(
   res = 150
 )
 
-par(mar = c(14, 5, 2, 1))
+par(mar = c(14, 5, 4, 1))
 
 plot(
   selprop_top,
@@ -517,9 +515,11 @@ plot(
   las = 1,
   xlab = "",
   ylab = "Selection Proportion",
+  main = "Outcome Model: Top 20 Selection Proportions",
   xaxt = "n",
   col = ifelse(selprop_top >= sel_threshold, "red", "#7f8c8d"),
-  cex.lab = 1.5
+  cex.lab = 1.5,
+  cex.main = 1.4
 )
 
 abline(h = sel_threshold, lty = 2, col = "darkred")
@@ -553,7 +553,7 @@ png(
   res = 150
 )
 
-par(mar = c(14, 5, 2, 1))
+par(mar = c(14, 5, 4, 1))
 
 plot(
   selprop_ord,
@@ -562,9 +562,11 @@ plot(
   las = 1,
   xlab = "",
   ylab = "Selection Proportion",
+  main = "Outcome Model: Ordered Selection Proportions",
   xaxt = "n",
   col = ifelse(selprop_ord >= sel_threshold, "red", "#7f8c8d"),
-  cex.lab = 1.5
+  cex.lab = 1.5,
+  cex.main = 1.4
 )
 
 abline(h = sel_threshold, lty = 2, col = "darkred")
@@ -580,8 +582,6 @@ for (i in seq_along(selprop_ord)) {
     col.axis = ifelse(selprop_ord[i] >= sel_threshold, "red", "#7f8c8d")
   )
 }
-
-dev.off()
 
 # =========================================================
 # 10) Console summary for us to view after running

@@ -9,7 +9,7 @@ library(corrplot)
 library(ggplot2)
 library(scales)
 
-# Activate config for anthropometry dataset
+# Activate config for anthropometry dataset for exploratory
 SCENARIO <- "sensitivity_anthro_confounder"
 
 source(here("01_scripts", "00_variable_dictionary.R"))
@@ -60,7 +60,9 @@ df_analysis <- df %>%
   ) %>%
   mutate(across(where(is.character), as.factor))
 
-# Run FAMD ------------------------------------------------
+# ----------------------------------------------------------
+# Run FAMD -------------------------------------------------
+# ----------------------------------------------------------
 
 set.seed(1)
 famd_res <- FAMD(df_analysis, ncp = 200, graph = FALSE)
@@ -101,7 +103,11 @@ write.csv(
   row.names = FALSE
 )
 
-# Scree Plot ------------------------------------------------
+# ----------------------------------------------------------
+# Scree Plots
+# ----------------------------------------------------------
+
+# Standard Scree Plot -----------------------------------------------
 
 eig_pct <- famd_res$eig[, 2]
 
@@ -127,7 +133,7 @@ tail(famd_res$eig[,3], 1)
 
 colnames(df_analysis)
 
-# Cumulative Scree ------------------------------------------------
+# Cumulative Scree Plot ------------------------------------------------
 
 cum_var <- famd_res$eig[, 3]
 
@@ -155,13 +161,15 @@ axis(
 
 dev.off()
 
-# Interpreting components of the first 7 PCs) ------------------------------------------------
+# Interpreting components of the first 7 most informative PCs (Principal Components) ------------------------------------------------
 
 num_contrib <- famd_res$quanti.var$contrib
 cat_contrib <- famd_res$quali.var$contrib
 
 sort(num_contrib[,7], decreasing = TRUE)[1:10]
 sort(cat_contrib[,7], decreasing = TRUE)[1:10]
+
+# Create plots for a PC
 
 plot_top_contrib <- function(contrib_matrix, pc_num, title_prefix) {
   
@@ -188,6 +196,8 @@ plot_top_contrib <- function(contrib_matrix, pc_num, title_prefix) {
   )
 }
 
+# Automatically loop through first 7 PCs to plot
+
 for (i in 1:7) {
   png(file.path(fig_dir, paste0("famd_numeric_contributors_pc", i, ".png")),
       width = 1800, height = 1400, res = 220)
@@ -195,7 +205,11 @@ for (i in 1:7) {
   dev.off()
 }
 
-# Plot (coloured by has_cvd) ------------------------------------------------
+# ----------------------------------------------------------
+# Scatter plot of first 2 PCs
+# ----------------------------------------------------------
+
+# Scatter Plot (coloured by CVD) ------------------------------------------------
 
 scores <- famd_res$ind$coord
 
@@ -234,7 +248,7 @@ legend(
 
 dev.off()
 
-# Plot (coloured by sex) ------------------------------------------------
+# Scatter Plot (coloured by sex) ---------------------------
 
 if ("sex" %in% names(df)) {
   
@@ -296,6 +310,7 @@ num_data <- df_analysis %>% select(where(is.numeric))
 
 if (ncol(num_data) >= 2) {
   
+  # Ensures we have valid number of columns
   valid_num_cols <- names(num_data)[vapply(num_data, function(x) sum(!is.na(x)) >= 2, logical(1))]
   num_data <- num_data[, valid_num_cols, drop = FALSE]
   
@@ -305,11 +320,13 @@ if (ncol(num_data) >= 2) {
   }, logical(1))]
   num_data <- num_data[, non_constant_cols, drop = FALSE]
   
+  # Calculates pairwise numeric correlations with Pearson
   if (ncol(num_data) >= 2) {
     
     cor_mat <- cor(num_data, use = "pairwise.complete.obs", method = "pearson")
     cor_mat_raw <- cor_mat
     
+    # Output the correlation matrix
     write.csv(
       cor_mat,
       file.path(tbl_dir, "correlation_matrix_numeric.csv"),
@@ -319,30 +336,38 @@ if (ncol(num_data) >= 2) {
     colnames(cor_mat) <- get_display_name(colnames(cor_mat))
     rownames(cor_mat) <- get_display_name(rownames(cor_mat))
     
-    png(file.path(fig_dir, "correlation_heatmap.png"), width = 2200, height = 2000, res = 220)
+    # Output the correlation heatmap
+    png(file.path(fig_dir, "correlation_heatmap.png"), width = 1800, height = 2400, res = 220)
     
-    par(mar = c(1, 1, 7, 1))
+    par(mar = c(1, 1, 8, 1), oma = c(0, 0, 3.5, 0))
     
     corrplot(
       cor_mat,
       method = "color",
       type = "upper",
-      main = "Correlation Structure of Numeric Variables",
-      cex.main = 1.2,
-      tl.cex = 0.7,
+      main = "",
+      tl.cex = 0.62,
       tl.col = "black",
       order = "hclust",
-      cl.lim = c(-1, 1)
+      col.lim = c(-1, 1)
+    )
+    
+    mtext(
+      "Numeric Variable Correlations",
+      side = 3,
+      outer = TRUE,
+      line = 0.2,
+      cex = 1.1,
+      font = 2
     )
     
     dev.off()
-    
-
     
     cor_mat_raw[lower.tri(cor_mat_raw, diag = TRUE)] <- NA
     cor_pairs <- as.data.frame(as.table(cor_mat_raw))
     cor_pairs <- cor_pairs[!is.na(cor_pairs$Freq), , drop = FALSE]
     
+    # Output all numeric correlations into a .csv
     if (nrow(cor_pairs) > 0) {
       
       cor_pairs$abs_cor <- abs(cor_pairs$Freq)
@@ -364,6 +389,7 @@ if (ncol(num_data) >= 2) {
       top15_cor$Var1 <- get_display_name(top15_cor$Var1)
       top15_cor$Var2 <- get_display_name(top15_cor$Var2)
       
+      # Outputs just the top 15 numeric correlations
       write.csv(
         top15_cor,
         file.path(tbl_dir, "top15_numeric_correlations.csv"),
@@ -385,20 +411,29 @@ if (ncol(num_data) >= 2) {
         colnames(cor_mat_top15) <- get_display_name(colnames(cor_mat_top15))
         rownames(cor_mat_top15) <- get_display_name(rownames(cor_mat_top15))
         
-        png(file.path(fig_dir, "correlation_heatmap_top15.png"), width = 1800, height = 1600, res = 220)
+        # Outputs top 15 numeric correlations as a heatmap
+        png(file.path(fig_dir, "correlation_heatmap_top15.png"), width = 1800, height = 2000, res = 220)
         
-        par(mar = c(1, 1, 7, 1))
+        par(mar = c(1, 1, 8, 1), oma = c(0, 0, 3.5, 0))
         
         corrplot(
           cor_mat_top15,
           method = "color",
           type = "upper",
-          main = paste("Top", top_n, "Strongest Pairwise Correlations"),
-          cex.main = 1.2,
-          tl.cex = 0.9,
+          main = "",
+          tl.cex = 0.85,
           tl.col = "black",
           order = "hclust",
-          cl.lim = c(-1, 1)
+          col.lim = c(-1, 1)
+        )
+        
+        mtext(
+          paste("Top", top_n, "Strongest Pairwise Correlations"),
+          side = 3,
+          outer = TRUE,
+          line = 0.2,
+          cex = 1.1,
+          font = 2
         )
         
         dev.off()
@@ -409,9 +444,11 @@ if (ncol(num_data) >= 2) {
 
 # Helper functions -------------------------------------------------------
 
+# Function for Cramer's V (correlation between categoricals)
 cramers_v <- function(x, y) {
   if (all(is.na(x)) || all(is.na(y))) return(NA_real_)
   
+  # Just some safety checks below
   keep <- !is.na(x) & !is.na(y)
   x <- x[keep]
   y <- y[keep]
@@ -441,6 +478,7 @@ cramers_v <- function(x, y) {
   sqrt(phi2 / denom)
 }
 
+# Calculates correlation ratio (eta) for categorical vs numeric
 correlation_ratio <- function(categories, values) {
   if (all(is.na(categories)) || all(is.na(values))) return(NA_real_)
   
@@ -468,8 +506,9 @@ correlation_ratio <- function(categories, values) {
   sqrt(ss_between / ss_total)
 }
 
-safe_corrplot <- function(mat, file_path, title_text, width = 2200, height = 2000,
-                          tl_cex = 0.8, mar_top = 7) {
+# Wrapper function to generate a formatted correlation heatmap for a matrix and save it as a PNG
+safe_corrplot <- function(mat, file_path, title_text, width = 1800, height = 2400,
+                          tl_cex = 0.8, mar_top = 8, col_lim = c(0, 1)) {
   
   if (is.null(mat)) return(invisible(NULL))
   if (!is.matrix(mat)) mat <- as.matrix(mat)
@@ -477,18 +516,26 @@ safe_corrplot <- function(mat, file_path, title_text, width = 2200, height = 200
   
   png(file_path, width = width, height = height, res = 220)
   
-  par(mar = c(1, 1, mar_top, 1))
+  par(mar = c(1, 1, mar_top, 1), oma = c(0, 0, 3.5, 0))
   
   corrplot(
     mat,
     method = "color",
     type = "upper",
-    main = title_text,
-    cex.main = 1.2,
+    main = "",
     tl.cex = tl_cex,
     tl.col = "black",
     order = "hclust",
-    cl.lim = c(0, 1)
+    col.lim = col_lim
+  )
+  
+  mtext(
+    title_text,
+    side = 3,
+    outer = TRUE,
+    line = -4,
+    cex = 1.1,
+    font = 2
   )
   
   dev.off()
@@ -543,6 +590,7 @@ if (length(cat_vars_all) >= 2) {
     }
   }
   
+  # Create the association matrix calculated with Cramer's V (Categoricals)
   write.csv(
     cat_cat_mat,
     file.path(tbl_dir, "association_matrix_categorical_cramers_v.csv"),
@@ -557,10 +605,11 @@ if (length(cat_vars_all) >= 2) {
     mat = cat_cat_mat,
     file_path = file.path(fig_dir, "association_heatmap_categorical_cramers_v.png"),
     title_text = "Association Structure of Categorical Variables (Cramer's V)",
-    width = 2200,
-    height = 2000,
-    tl_cex = 0.75,
-    mar_top = 7
+    width = 1800,
+    height = 2400,
+    tl_cex = 0.72,
+    mar_top = 8,
+    col_lim = c(0, 1)
   )
   
   cat_cat_raw[lower.tri(cat_cat_raw, diag = TRUE)] <- NA
@@ -604,6 +653,7 @@ if (length(num_vars_all) >= 1 && length(cat_vars_all) >= 1) {
     }
   }
   
+  # Create the .csv with Eta for all associations (Numeric vs Categorical)
   write.csv(
     num_cat_mat,
     file.path(tbl_dir, "association_matrix_numeric_categorical_eta.csv"),
@@ -628,6 +678,7 @@ if (length(num_vars_all) >= 1 && length(cat_vars_all) >= 1) {
     top_num_cat_export$Var1 <- get_display_name(top_num_cat_export$Var1)
     top_num_cat_export$Var2 <- get_display_name(top_num_cat_export$Var2)
     
+    # Create .csv for top 20 Eta correlations
     write.csv(
       top_num_cat_export,
       file.path(tbl_dir, "top20_numeric_categorical_associations_eta.csv"),
@@ -637,21 +688,30 @@ if (length(num_vars_all) >= 1 && length(cat_vars_all) >= 1) {
     colnames(num_cat_top) <- get_display_name(colnames(num_cat_top))
     rownames(num_cat_top) <- get_display_name(rownames(num_cat_top))
     
+    # Create the association matrix calculated with Eta (Numeric vs Categorical)
     if (nrow(num_cat_top) >= 1 && ncol(num_cat_top) >= 1) {
       png(file.path(fig_dir, "association_heatmap_numeric_categorical_eta.png"),
-          width = 2200, height = 1800, res = 220)
+          width = 1800, height = 2200, res = 220)
       
-      par(mar = c(8, 8, 7, 2))
+      par(mar = c(8, 8, 8, 2), oma = c(0, 0, 3.5, 0))
       
       corrplot(
         num_cat_top,
         is.corr = FALSE,
         method = "color",
-        main = "Associations Between Numeric and Categorical Variables (Eta)",
-        cex.main = 1.2,
-        tl.cex = 0.8,
+        main = "",
+        tl.cex = 0.78,
         tl.col = "black",
-        cl.lim = c(0, 1)
+        col.lim = c(0, 1)
+      )
+      
+      mtext(
+        "Associations Between Numeric and Categorical Variables (Eta)",
+        side = 3,
+        outer = TRUE,
+        line = 0.2,
+        cex = 1.05,
+        font = 2
       )
       
       dev.off()
@@ -674,6 +734,8 @@ if (length(mixed_vars) >= 2) {
     dimnames = list(mixed_vars, mixed_vars)
   )
   
+  # Nested loop through all mixed variables
+  # To create a full correlation heatmap with all types of variables
   for (i in seq_along(mixed_vars)) {
     for (j in seq_along(mixed_vars)) {
       
@@ -713,13 +775,14 @@ if (length(mixed_vars) >= 2) {
     }
   }
   
+  # Create the .csv matrix with every variable (all types)
   write.csv(
     mixed_mat,
     file.path(tbl_dir, "association_matrix_mixed_variables.csv"),
     row.names = TRUE
   )
   
-  # Full mixed plot can get too crowded, so also create a reduced top-variable plot
+  # Full mixed plot can get too crowded, so create a top 20 variables plot
   mixed_long <- as.data.frame(as.table(mixed_mat))
   mixed_long <- mixed_long[mixed_long$Var1 != mixed_long$Var2, , drop = FALSE]
   mixed_long <- mixed_long[!is.na(mixed_long$Freq), , drop = FALSE]
@@ -743,6 +806,7 @@ if (length(mixed_vars) >= 2) {
     top_mixed_export$Var1 <- get_display_name(top_mixed_export$Var1)
     top_mixed_export$Var2 <- get_display_name(top_mixed_export$Var2)
     
+    # Just the top 20 associations (including mixed types) in a .csv
     write.csv(
       top_mixed_export,
       file.path(tbl_dir, "top20_mixed_variable_associations.csv"),
@@ -755,44 +819,56 @@ if (length(mixed_vars) >= 2) {
       colnames(mixed_top_mat) <- get_display_name(colnames(mixed_top_mat))
       rownames(mixed_top_mat) <- get_display_name(rownames(mixed_top_mat))
       
+      # Create a heatmap for mixed variables too
       png(file.path(fig_dir, "association_heatmap_mixed_variables.png"),
-          width = 2200, height = 2000, res = 220)
+          width = 1800, height = 2400, res = 220)
       
-      par(mar = c(1, 1, 7, 1))
+      par(mar = c(1, 1, 8, 1), oma = c(0, 0, 3.5, 0))
       
       corrplot(
         mixed_top_mat,
         is.corr = FALSE,
         method = "color",
         type = "upper",
-        main = "Mixed Variable Association Heatmap",
-        cex.main = 1.2,
-        tl.cex = 0.75,
+        main = "",
+        tl.cex = 0.72,
         tl.col = "black",
         order = "hclust",
-        cl.lim = c(0, 1)
+        col.lim = c(0, 1)
+      )
+      
+      mtext(
+        "Mixed Variable Association Heatmap",
+        side = 3,
+        outer = TRUE,
+        line = -4,
+        cex = 1.1,
+        font = 2
       )
       
       dev.off()
     }
   }
 }
-
 # ----------------------------------------------------------
 # Exploratory Plots 
 # ----------------------------------------------------------
+
+# We include the top 6 (expcept sbp) Framingham Risk Score variables for predicting CVD:
+# Age, Total Chol, HDL chol, Smoking Status, Gender 
+# (sbp moved since it was a secondary mediator)
 
 # Add outcome back for EDA
 eda_df <- df_analysis
 eda_df$has_cvd <- factor(df$has_cvd, levels = c(0,1), labels = c("No CVD","CVD"))
 
-# Create summary stats for numeric variables
 boxplot_vars <- c("age", "ldl_direct", "hdl_cholesterol",
                   "total_cholesterol", "hba1c", "crp")
 
 boxplot_vars <- intersect(boxplot_vars, names(eda_df))
 boxplot_vars <- boxplot_vars[vapply(eda_df[boxplot_vars], is.numeric, logical(1))]
 
+# Create summary stats for numeric variables
 boxplot_summary <- bind_rows(lapply(boxplot_vars, function(var) {
   eda_df %>%
     group_by(has_cvd) %>%
@@ -811,6 +887,7 @@ boxplot_summary <- bind_rows(lapply(boxplot_vars, function(var) {
     )
 }))
 
+# Create numeric summary to make plots later if necessary
 if (nrow(boxplot_summary) > 0) {
   write.csv(
     boxplot_summary,
@@ -819,7 +896,7 @@ if (nrow(boxplot_summary) > 0) {
   )
 }
 
-# Create summary stats for numeric variables
+# Create summary stats for categorical variables
 categorical_vars <- c("sex", "smoking_status_refined", "alcohol_consumption")
 categorical_vars <- categorical_vars[categorical_vars %in% names(eda_df)]
 
@@ -839,6 +916,7 @@ categorical_summary <- bind_rows(lapply(categorical_vars, function(var) {
     rename(category = 1)
 }))
 
+# Create categorical summary to make plots later if necessary
 if (nrow(categorical_summary) > 0) {
   write.csv(
     categorical_summary,
@@ -847,7 +925,9 @@ if (nrow(categorical_summary) > 0) {
   )
 }
 
-# Boxplots for strongest clinical predictors
+# ----------------------------------------------------------
+# Boxplots
+# ----------------------------------------------------------
 
 plot_box <- function(var){
   if (!var %in% names(eda_df)) return(NULL)
@@ -873,6 +953,8 @@ plot_box <- function(var){
     )
 }
 
+# For loop to create box plots by CVD status
+
 for (var in boxplot_vars) {
   p_box <- plot_box(var)
   if (!is.null(p_box)) {
@@ -896,6 +978,8 @@ plot_density <- function(var){
   
   var_label <- get_display_name(var)
   
+  # Density plots for distribution by CVD
+  
   ggplot(eda_df, aes(x = .data[[var]], colour = has_cvd)) +
     geom_density(linewidth = 1) +
     scale_colour_manual(values = c("No CVD" = "#1b1b1b", "CVD" = "#2f6db3")) +
@@ -915,6 +999,8 @@ plot_density <- function(var){
     )
 }
 
+# For loop to create Density plots for each variable by CVD
+
 for (var in boxplot_vars) {
   p_density <- plot_density(var)
   if (!is.null(p_density)) {
@@ -929,7 +1015,7 @@ for (var in boxplot_vars) {
 }
 
 # ----------------------------------------------------------
-# Categorical variables vs outcome 
+# Categorical variables vs outcome: Bar plots
 # ----------------------------------------------------------
 
 plot_bar <- function(var){
@@ -943,6 +1029,8 @@ plot_bar <- function(var){
     mutate(prop = n / sum(n),
            label = scales::percent(prop, accuracy = 1)) %>%
     ungroup()
+  
+  # Create bar plots for CVD by proportion
   
   ggplot(plot_df, aes(x = .data[[var]], y = prop, fill = has_cvd)) +
     geom_col(position = "stack") +
@@ -970,6 +1058,8 @@ plot_bar <- function(var){
       panel.grid.minor = element_blank()
     )
 }
+
+# For loop to create bar plot for each categorical variable
 
 for (var in categorical_vars) {
   p_bar <- plot_bar(var)

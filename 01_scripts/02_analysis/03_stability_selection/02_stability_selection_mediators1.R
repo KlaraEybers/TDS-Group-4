@@ -314,7 +314,7 @@ for (med in selected_mediators) {
     penalty.factor = penalty_factor,
     verbose = FALSE,
     n_cat = 3,
-    K = 100
+    K = 300
   )
   
   # ----------------------------------------------------------------------------------------
@@ -534,6 +534,20 @@ for (med in selected_mediators) {
     row.names = FALSE
   )
   
+  # Calibration plot for viewing lambda and pi patterns
+  png(
+    filename = file.path(fig_out_dir, paste0(med, "_sharp_calibration_plot.png")),
+    width = 2300,
+    height = 1300,
+    res = 150
+  )
+  
+  par(mar = c(6.5, 6.5, 5.0, 7.0))
+  
+  try(sharp::CalibrationPlot(out), silent = TRUE)
+  
+  dev.off()
+  
   # -------------------------------------------------------
   # Plot of selection proportion of exposures for respective mediator
   # -------------------------------------------------------
@@ -548,7 +562,7 @@ for (med in selected_mediators) {
     res = 150
   )
   
-  par(mar = c(14, 5, 2, 1))
+  par(mar = c(14, 5, 4, 1))
   
   plot(
     selprop,
@@ -557,9 +571,11 @@ for (med in selected_mediators) {
     las = 1,
     xlab = "",
     ylab = "Selection Proportion",
+    main = paste("Mediator Model:", get_display_name(med)),
     xaxt = "n",
     col = ifelse(selprop >= sel_threshold, "red", "#7f8c8d"),
-    cex.lab = 1.5
+    cex.lab = 1.5,
+    cex.main = 1.3
   )
   
   abline(h = sel_threshold, lty = 2, col = "darkred")
@@ -573,6 +589,53 @@ for (med in selected_mediators) {
       cex.axis = 0.7,
       col = ifelse(selprop[i] >= sel_threshold, "red", "#7f8c8d"),
       col.axis = ifelse(selprop[i] >= sel_threshold, "red", "#7f8c8d")
+    )
+  }
+  
+  dev.off()
+  
+  # -------------------------------------------------------
+  # Ordered plot of all selection proportions
+  # -------------------------------------------------------
+  
+  ord_all <- order(selprop, decreasing = TRUE)
+  selprop_ord <- selprop[ord_all]
+  selprop_ord_labels <- get_display_name(names(selprop_ord))
+  
+  png(
+    filename = file.path(fig_out_dir, paste0(med, "_sharp_plot_ordered.png")),
+    width = 1800,
+    height = 1100,
+    res = 150
+  )
+  
+  par(mar = c(14, 5, 4, 1))
+  
+  plot(
+    selprop_ord,
+    type = "h",
+    lwd = 3,
+    las = 1,
+    xlab = "",
+    ylab = "Selection Proportion",
+    main = paste("Ordered Selection Proportions:", get_display_name(med)[1]),
+    xaxt = "n",
+    col = ifelse(selprop_ord >= sel_threshold, "red", "#7f8c8d"),
+    cex.lab = 1.5,
+    cex.main = 1.2
+  )
+  
+  abline(h = sel_threshold, lty = 2, col = "darkred")
+  
+  for (i in seq_along(selprop_ord)) {
+    axis(
+      side = 1,
+      at = i,
+      labels = selprop_ord_labels[i],
+      las = 2,
+      cex.axis = 0.7,
+      col = ifelse(selprop_ord[i] >= sel_threshold, "red", "#7f8c8d"),
+      col.axis = ifelse(selprop_ord[i] >= sel_threshold, "red", "#7f8c8d")
     )
   }
   
@@ -595,7 +658,7 @@ for (med in selected_mediators) {
     res = 150
   )
   
-  par(mar = c(14, 5, 3, 1))
+  par(mar = c(14, 5, 4, 1))
   
   plot(
     selprop_top,
@@ -604,10 +667,11 @@ for (med in selected_mediators) {
     las = 1,
     xlab = "",
     ylab = "Selection Proportion",
+    main = paste("Top 20 Selection Proportions:", get_display_name(med)),
     xaxt = "n",
     col = ifelse(selprop_top >= sel_threshold, "red", "#7f8c8d"),
     cex.lab = 1.4,
-    main = "Top 20 Variables by Selection Proportion"
+    cex.main = 1.2
   )
   
   abline(h = sel_threshold, lty = 2, col = "darkred")

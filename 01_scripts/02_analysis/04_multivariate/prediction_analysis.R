@@ -97,9 +97,6 @@ for (name in names(models)) {
 
 print(auc_results)
 
-sapply(train[, sapply(train, is.factor)], function(x) levels(x)[1])
-
-
 # Train Set AUC (Overfitting check) ---------------------------------------
 
 train_auc <- data.frame()

@@ -13,6 +13,7 @@ library(here)
 library(dplyr)
 library(pROC)
 library(ggplot2)
+library(grid)
 
 source(here("01_scripts", "00_variable_config.R"))
 source(here("01_scripts", "00_variable_dictionary.R"))
@@ -263,9 +264,14 @@ incremental_plot <- ggplot(
     legend.position = "none",
     
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    axis.line.x = element_line(colour = "#7f8c8d", linewidth = 0.7),
+    axis.line.y = element_line(colour = "#7f8c8d", linewidth = 0.7),
+    axis.ticks.x = element_line(colour = "#7f8c8d", linewidth = 0.7),
+    axis.ticks.y = element_line(colour = "#7f8c8d", linewidth = 0.7),
+    axis.ticks.length = unit(0.2, "cm"),
     
-    panel.grid.major.x = element_line(colour = "#e0e0e0", linewidth = 0.4),
-    panel.grid.major.y = element_line(colour = "#e0e0e0", linewidth = 0.4),
+    panel.grid.major.x = element_line(colour = "#d0d0d0", linewidth = 0.55),
+    panel.grid.major.y = element_line(colour = "#d0d0d0", linewidth = 0.55),
     panel.grid.minor   = element_blank(),
     
     plot.title = element_text(hjust = 0.5, face = "bold", colour = "#2c3e50")

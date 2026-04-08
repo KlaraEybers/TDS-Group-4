@@ -1,6 +1,0 @@
-rm(list = ls())
-
-# Dependencies
-library(here)
-
-ukb_clean <- readRDS(here("data", "00_extracted", "ukb_initial_cleaned.rds"))

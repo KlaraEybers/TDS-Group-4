@@ -42,7 +42,7 @@ pattern <- paste(c(
 
 matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
 
-ukb_clean <- ukb_clean %>% select(eid, all_of(matching_cols))
+ukb_clean <- ukb_clean %>% select(eid, any_of(matching_cols))
 
 # Data cleaning
 
@@ -59,7 +59,7 @@ drop_prefixes <- c(
 drop_pattern <- paste0("^(", paste(drop_prefixes, collapse = "|"), ")")
 cols_to_drop <- grep(drop_pattern, colnames(ukb_clean), value = TRUE)
 
-ukb_clean <- ukb_clean %>% select(-all_of(cols_to_drop))
+ukb_clean <- ukb_clean %>% select(-any_of(cols_to_drop))
 
 # Turn na_strings values into NAs
 
@@ -81,7 +81,7 @@ cols_to_recode <- grep(paste0("^(", paste(base_fields, collapse = "|"), ")"), na
 ukb_clean <- ukb_clean %>%
   mutate(
     across(
-      all_of(cols_to_recode),
+      any_of(cols_to_recode),
       ~ {
         x <- .
         if (is.factor(x)) x <- as.character(x)
@@ -90,7 +90,7 @@ ukb_clean <- ukb_clean %>%
       }
     )
   ) %>%
-  mutate(across(all_of(cols_to_recode), ~ if (is.character(.x)) as.factor(.x) else .x))
+  mutate(across(any_of(cols_to_recode), ~ if (is.character(.x)) as.factor(.x) else .x))
 
 # Collapse variables with multiple columns
 
@@ -124,28 +124,28 @@ preg_cols <- c(
 )
 
 ukb_clean <- ukb_clean %>%
-  mutate(across(all_of(preg_cols), ~ suppressWarnings(as.numeric(as.character(.))))) %>%
+  mutate(across(any_of(preg_cols), ~ suppressWarnings(as.numeric(as.character(.))))) %>%
   mutate(
     heart_problems_collapsed = case_when(
-      if_any(all_of(heart_cols), ~ .x %in% heart_yes_vals) ~ "Yes",
-      if_all(all_of(heart_cols), ~ .x == "None of the above") ~ "No",
-      if_all(all_of(heart_cols), ~ .x == "Prefer not to say") ~ "Prefer not to say",
+      if_any(any_of(heart_cols), ~ .x %in% heart_yes_vals) ~ "Yes",
+      if_all(any_of(heart_cols), ~ .x == "None of the above") ~ "No",
+      if_all(any_of(heart_cols), ~ .x == "Prefer not to say") ~ "Prefer not to say",
       TRUE ~ NA_character_
     ),
     
     meds_chol_bp_diabetes_hormone_collapsed = case_when(
-      if_any(all_of(meds_horm_cols), ~ .x %in% meds_horm_yes_vals) ~ "Yes",
-      if_all(all_of(meds_horm_cols), ~ .x == "None of the above") ~ "No",
-      if_all(all_of(meds_horm_cols), ~ .x == "Do not know") ~ "Do not know",
-      if_all(all_of(meds_horm_cols), ~ .x == "Prefer not to say") ~ "Prefer not to say",
+      if_any(any_of(meds_horm_cols), ~ .x %in% meds_horm_yes_vals) ~ "Yes",
+      if_all(any_of(meds_horm_cols), ~ .x == "None of the above") ~ "No",
+      if_all(any_of(meds_horm_cols), ~ .x == "Do not know") ~ "Do not know",
+      if_all(any_of(meds_horm_cols), ~ .x == "Prefer not to say") ~ "Prefer not to say",
       TRUE ~ NA_character_
     ),
     
     meds_chol_bp_diabetes_collapsed = case_when(
-      if_any(all_of(meds_cols), ~ .x %in% meds_yes_vals) ~ "Yes",
-      if_all(all_of(meds_cols), ~ .x == "None of the above") ~ "No",
-      if_all(all_of(meds_cols), ~ .x == "Do not know") ~ "Do not know",
-      if_all(all_of(meds_cols), ~ .x == "Prefer not to say") ~ "Prefer not to say",
+      if_any(any_of(meds_cols), ~ .x %in% meds_yes_vals) ~ "Yes",
+      if_all(any_of(meds_cols), ~ .x == "None of the above") ~ "No",
+      if_all(any_of(meds_cols), ~ .x == "Do not know") ~ "Do not know",
+      if_all(any_of(meds_cols), ~ .x == "Prefer not to say") ~ "Prefer not to say",
       TRUE ~ NA_character_
     ),
     
@@ -157,10 +157,10 @@ ukb_clean <- ukb_clean %>%
     )
   ) %>%
   select(
-    -all_of(heart_cols),
-    -all_of(meds_horm_cols),
-    -all_of(meds_cols),
-    -all_of(preg_cols)
+    -any_of(heart_cols),
+    -any_of(meds_horm_cols),
+    -any_of(meds_cols),
+    -any_of(preg_cols)
   )
 
 # Convert implausible ages to NA

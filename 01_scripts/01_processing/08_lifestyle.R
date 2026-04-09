@@ -29,7 +29,7 @@ pattern <- paste(c(
 matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
 
 selected_data <- ukb_clean %>%
-  select(eid, all_of(matching_cols))
+  select(eid, any_of(matching_cols))
 
 # Variable Distributions (JUST FOR ME TO LOOK AT) ------------------------------------------------------
 

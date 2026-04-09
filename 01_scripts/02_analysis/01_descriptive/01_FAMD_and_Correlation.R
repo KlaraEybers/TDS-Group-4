@@ -548,7 +548,7 @@ cat_vars_all <- names(df_analysis)[vapply(df_analysis, function(x) is.factor(x) 
 
 # Convert character categorical vars to factor for association work
 df_assoc <- df_analysis %>%
-  mutate(across(all_of(cat_vars_all), ~ as.factor(.x)))
+  mutate(across(any_of(cat_vars_all), ~ as.factor(.x)))
 
 # Remove unusable numeric vars
 if (length(num_vars_all) > 0) {

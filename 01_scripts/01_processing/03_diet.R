@@ -27,7 +27,7 @@ pattern <- paste(c(
 matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
 
 # Select relevant columnns
-selected_data <- ukb_clean %>% select(eid, all_of(matching_cols))
+selected_data <- ukb_clean %>% select(eid, any_of(matching_cols))
 
 
 # Diet Score --------------------------------------------------------------
@@ -59,7 +59,7 @@ diet_clean <- selected_data %>%
     # 0. UPFRONT NA CLEANING - Convert all "Prefer not to answer"/"Do not know" to NA
     # -------------------------------------------------------------------------
     across(
-      all_of(diet_score_variables),
+      any_of(diet_score_variables),
       ~case_when(
         . %in% c("Do not know", "Prefer not to answer") ~ NA_character_,
         TRUE ~ .

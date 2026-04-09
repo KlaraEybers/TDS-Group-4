@@ -139,7 +139,7 @@ cols_to_drop <- c("diabetes_doctor_diagnosed", "serious_dx",
                   "n_previous_pregnancies_collapsed")
 
 ncol_before <- ncol(final_filtered)
-final_filtered <- final_filtered %>% select(-all_of(cols_to_drop))
+final_filtered <- final_filtered %>% select(-any_of(cols_to_drop))
 ncol_after <- ncol(final_filtered)
 
 cat("Columns before:", ncol_before, "\n")

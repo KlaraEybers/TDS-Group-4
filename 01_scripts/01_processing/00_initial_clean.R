@@ -43,12 +43,12 @@ ill_onset_cols <- grep("^ill_onset_age", names(ukb), value = TRUE)
 # Create separate dataset containing: eid + all ill_onset_age columns
 
 ill_onset_data <- ukb %>%
-  select(eid, all_of(ill_onset_cols))
+  select(eid, any_of(ill_onset_cols))
 
 # Remove ill_onset_age columns from main ukb dataset
 
 ukb <- ukb %>%
-  select(-all_of(ill_onset_cols))
+  select(-any_of(ill_onset_cols))
 
 # ukb now no longer contains ill_onset_age columns
 # ill_onset_data contains them separately

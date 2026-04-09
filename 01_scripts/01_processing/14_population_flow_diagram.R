@@ -77,7 +77,7 @@ n_missing_dropped <- n_merged - n_cleaned
 
 # Simulate dropping missing confounders (Age, Sex, Ethnicity)
 dat_full <- dat_cleaned %>%
-  drop_na(all_of(intersect(confounder_vars, names(dat_cleaned))))
+  drop_na(any_of(intersect(confounder_vars, names(dat_cleaned))))
 
 n_full <- nrow(dat_full)
 n_confounders_dropped <- n_cleaned - n_full

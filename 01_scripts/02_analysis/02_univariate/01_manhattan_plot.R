@@ -96,7 +96,7 @@ make_manhattan_lollipop <- function(data, y_var, y_label, sig_line,
   
   data <- data %>%
     mutate(
-      across(all_of(y_var), ~ ifelse(is.infinite(.x), finite_max + 10, .x))
+      across(any_of(y_var), ~ ifelse(is.infinite(.x), finite_max + 10, .x))
     )
   
   y_raw <- data[[y_var]]

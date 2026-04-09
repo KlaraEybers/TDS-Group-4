@@ -91,7 +91,7 @@ candidate_predictors <- unique(c(confounder_vars, exposure_vars, bio_vars))
 
 # Keep only required columns 
 df <- df %>%
-  select(all_of(c(intersect("eid", names(.)), "has_cvd", candidate_predictors)))
+  select(any_of(c(intersect("eid", names(.)), "has_cvd", candidate_predictors)))
 
 # Save IDs from data set
 if ("eid" %in% names(df)) {
@@ -112,7 +112,7 @@ if (length(exclude_vars) > 0) {
   exclude_in_data <- intersect(exclude_vars, names(df))
   if (length(exclude_in_data) > 0) {
     cat("Removing excluded variables:", paste(exclude_in_data, collapse = ", "), "\n")
-    df <- df %>% select(-all_of(exclude_in_data))
+    df <- df %>% select(-any_of(exclude_in_data))
   }
 }
 
@@ -144,7 +144,7 @@ df <- df %>%
 date_cols <- names(df)[vapply(df, inherits, logical(1), what = "Date")]
 if (length(date_cols) > 0) {
   df <- df %>%
-    mutate(across(all_of(date_cols), ~ as.numeric(.)))
+    mutate(across(any_of(date_cols), ~ as.numeric(.)))
 }
 
 # Drop unused factor levels to reduce encoding surprises
@@ -711,7 +711,7 @@ summary(df$ethnicity)
 # 
 # # Keep only required columns 
 # df <- df %>%
-#   select(all_of(c(intersect("eid", names(.)), "has_cvd", candidate_predictors)))
+#   select(any_of(c(intersect("eid", names(.)), "has_cvd", candidate_predictors)))
 # 
 # # Save IDs from data set
 # if ("eid" %in% names(df)) {
@@ -732,7 +732,7 @@ summary(df$ethnicity)
 #   exclude_in_data <- intersect(exclude_vars, names(df))
 #   if (length(exclude_in_data) > 0) {
 #     cat("Removing excluded variables:", paste(exclude_in_data, collapse = ", "), "\n")
-#     df <- df %>% select(-all_of(exclude_in_data))
+#     df <- df %>% select(-any_of(exclude_in_data))
 #   }
 # }
 # 
@@ -754,7 +754,7 @@ summary(df$ethnicity)
 # date_cols <- names(df)[vapply(df, inherits, logical(1), what = "Date")]
 # if (length(date_cols) > 0) {
 #   df <- df %>%
-#     mutate(across(all_of(date_cols), ~ as.numeric(.)))
+#     mutate(across(any_of(date_cols), ~ as.numeric(.)))
 # }
 # 
 # # Ensure outcome is numeric 0/1

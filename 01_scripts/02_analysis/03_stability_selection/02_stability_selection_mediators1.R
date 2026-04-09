@@ -111,7 +111,7 @@ df <- df %>%
 date_cols <- names(df)[vapply(df, inherits, logical(1), what = "Date")]
 if (length(date_cols) > 0) {
   df <- df %>%
-    mutate(across(all_of(date_cols), ~ as.numeric(.)))
+    mutate(across(any_of(date_cols), ~ as.numeric(.)))
 }
 
 df <- df %>%
@@ -218,7 +218,7 @@ for (med in selected_mediators) {
   vars_to_keep <- intersect(vars_to_keep, names(df))
   
   df_med <- df %>%
-    select(all_of(vars_to_keep))
+    select(any_of(vars_to_keep))
   
   # Sharp requires complete data
   df_med <- df_med %>%
@@ -236,7 +236,7 @@ for (med in selected_mediators) {
   # -------------------------------------------------------
   
   y <- df_med[[med]]
-  x_df <- df_med %>% select(-all_of(med))
+  x_df <- df_med %>% select(-any_of(med))
   
   if (ncol(x_df) == 0) {
     stop(paste("No predictor columns remain for mediator:", med))
@@ -824,7 +824,7 @@ write.csv(
 # date_cols <- names(df)[vapply(df, inherits, logical(1), what = "Date")]
 # if (length(date_cols) > 0) {
 #   df <- df %>%
-#     mutate(across(all_of(date_cols), ~ as.numeric(.)))
+#     mutate(across(any_of(date_cols), ~ as.numeric(.)))
 # }
 # 
 # # =========================================================
@@ -905,7 +905,7 @@ write.csv(
 #   vars_to_keep <- intersect(vars_to_keep, names(df))
 #   
 #   df_med <- df %>%
-#     select(all_of(vars_to_keep))
+#     select(any_of(vars_to_keep))
 #   
 #   # Sharp requires complete data
 #   df_med <- df_med %>%
@@ -923,7 +923,7 @@ write.csv(
 #   # -------------------------------------------------------
 #   
 #   y <- df_med[[med]]
-#   x_df <- df_med %>% select(-all_of(med))
+#   x_df <- df_med %>% select(-any_of(med))
 #   
 #   # Convert binary factor mediator to 0/1 if needed
 #   if (med_family == "binomial") {

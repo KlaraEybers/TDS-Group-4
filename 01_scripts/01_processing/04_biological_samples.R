@@ -21,7 +21,7 @@ biological_samples_cols <- c(
   "neutrophill_count.0.0", "lymphocyte_count.0.0", "monocyte_count.0.0"
 )
 
-ukb_clean <- ukb_clean %>% select(eid, all_of(biological_samples_cols))
+ukb_clean <- ukb_clean %>% select(eid, any_of(biological_samples_cols))
 
 # Data cleaning 
 
@@ -46,7 +46,7 @@ non_numeric_report
 
 # 3) Change character columns to numeric
 ukb_clean <- ukb_clean %>%
-  mutate(across(all_of(biological_samples_cols), ~ suppressWarnings(as.numeric(as.character(.)))))
+  mutate(across(any_of(biological_samples_cols), ~ suppressWarnings(as.numeric(as.character(.)))))
 
 sapply(biological_samples_cols, function(v) class(ukb_clean[[v]]))
 

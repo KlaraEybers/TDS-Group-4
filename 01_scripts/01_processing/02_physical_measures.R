@@ -57,7 +57,7 @@ pattern <- paste(c(
 matching_cols <- grep(pattern, colnames(ukb_clean), value = TRUE)
 
 # Select relevant columnns
-selected_data <- ukb_clean %>% select(eid, all_of(matching_cols))
+selected_data <- ukb_clean %>% select(eid, any_of(matching_cols))
 
 #--------------------------------------------------------------------------
 # Data pre-processing -----------------------------------------------------

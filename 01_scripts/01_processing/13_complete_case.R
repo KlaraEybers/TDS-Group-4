@@ -50,7 +50,7 @@ if (length(exclude_vars) > 0) {
   if (length(exclude_in_data) > 0) {
     cat("Removing excluded variables before NA filter:", 
         paste(exclude_in_data, collapse = ", "), "\n")
-    df <- df %>% select(-all_of(exclude_in_data))
+    df <- df %>% select(-any_of(exclude_in_data))
   }
 }
 

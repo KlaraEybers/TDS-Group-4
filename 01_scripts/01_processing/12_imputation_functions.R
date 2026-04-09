@@ -7,7 +7,7 @@
 # Function to process data for each different imputation set
 prep_for_imputation <- function(data, vars_to_impute, predictor_vars, min_level_count = 5) {
   df_out <- data %>%
-    select(all_of(c(vars_to_impute, predictor_vars))) %>%
+    select(any_of(c(vars_to_impute, predictor_vars))) %>%
     mutate(
       across(c(any_of(c("age_high_bp_dx", "age_diabetes_dx", "angina_dx_age",
                         "mi_dx_age", "dvt_dx_age", "pe_dx_age", "stroke_dx_age"))),
@@ -72,7 +72,7 @@ run_dag_imputation <- function(data, label, return_models = FALSE) {
   # Combine
   df_filled <- bind_cols(
     exp_filled,
-    bio_filled %>% select(all_of(bio_vars))
+    bio_filled %>% select(any_of(bio_vars))
   ) %>% back_transform(log_vars)
   
   # Original for diagnostics
@@ -123,7 +123,7 @@ apply_dag_imputation <- function(data, train_result, label) {
   # Combine
   df_filled <- bind_cols(
     exp_filled,
-    bio_filled %>% select(all_of(bio_vars))
+    bio_filled %>% select(any_of(bio_vars))
   ) %>% back_transform(log_vars)
   
   # Original for diagnostics
@@ -213,7 +213,7 @@ save_diagnostics <- function(original, imputed, label) {
 
 add_back_columns <- function(original_df, imputed_df) {
   bind_cols(
-    original_df %>% select(all_of(admin_vars)),
+    original_df %>% select(any_of(admin_vars)),
     imputed_df
   )
 }

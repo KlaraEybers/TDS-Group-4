@@ -74,7 +74,7 @@ exact_cols <- c("sex.0.0")
 all_cols <- c(matching_cols, exact_cols)
 
 # Select relevant columnns
-selected_data <- ukb_clean %>% select(eid, all_of(all_cols))
+selected_data <- ukb_clean %>% select(eid, any_of(all_cols))
 
 #--------------------------------------------------------------------------
 # Data pre-processing -----------------------------------------------------
@@ -202,7 +202,7 @@ sociodem_clean <- sociodem_clean %>%
 
 # Drop intermediate and original columns
 sociodem_clean <- sociodem_clean %>%
-  select(-highest_qual_code, -all_of(quals_cols))
+  select(-highest_qual_code, -any_of(quals_cols))
 
 
 # Employment status -------------------------------------------------------
@@ -269,7 +269,7 @@ sociodem_clean <- sociodem_clean %>%
 
 # Drop intermediate variable and all original employment columns
 sociodem_clean <- sociodem_clean %>%
-  select(-emp_code, -all_of(emp_cols), -employment_corrected.0.0)
+  select(-emp_code, -any_of(emp_cols), -employment_corrected.0.0)
 
 
 # Home ownership status ---------------------------------------------------

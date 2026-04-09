@@ -129,7 +129,7 @@ cat("NAs per confounder before drop:\n")
 print(colSums(is.na(df[, confounder_vars])))
 
 n_before <- nrow(df)
-df <- df %>% drop_na(all_of(confounder_vars))
+df <- df %>% drop_na(any_of(confounder_vars))
 n_dropped <- n_before - nrow(df)
 
 cat("Dropped", n_dropped, "rows with missing confounders\n")
@@ -142,7 +142,7 @@ cat("No CVD events:", sum(df$has_cvd == 0), "\n")
 
 # Skewness test
 df %>%
-  select(all_of(bio_vars)) %>%
+  select(any_of(bio_vars)) %>%
   select(where(is.numeric)) %>%
   sapply(function(x) skewness(x, na.rm = TRUE)) %>%
   sort(decreasing = TRUE)

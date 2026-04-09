@@ -140,7 +140,7 @@ environment variable (set in relevant job scripts via 00_variable_config.R):
   5-refit-cc.sh
   6-ml.sh
 
-Default project root:   cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/
+Default project root:   cd /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/
 
 Step 0 - Before submitting, set the following variables in the job scripts:
 

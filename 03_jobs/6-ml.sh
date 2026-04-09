@@ -6,12 +6,12 @@
 #PBS -e 03_jobs/logs/
 set -e
 
-cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/ # ADAPT THIS 
+cd /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/ # ADAPT THIS 
 
 LOGFILE="03_jobs/logs/ml_models_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs
 
-source /rds/general/project/hda_25-26/live/TDS/TDS_Group4/group4_python_environment/bin/activate # ADAPT THIS
+source /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/group4_python_environment/bin/activate # ADAPT THIS
 
 echo "Started: $(date)" >> $LOGFILE 2>&1
 

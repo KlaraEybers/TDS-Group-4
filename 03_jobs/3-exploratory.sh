@@ -8,13 +8,13 @@
 set -e
 
 # Set project root path here
-cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/
+cd /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/
 
 LOGFILE="03_jobs/logs/exploratory_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs
 
 # Set CVD outcome path here
-cvd_events_path=/rds/general/project/hda_25-26/live/TDS/TDS_Group4/00_data/00_extracted/cvd_events.rds
+cvd_events_path=/rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/00_data/00_extracted/cvd_events.rds
 
 #Set missingness thresholds
 variable_threshold=0.3

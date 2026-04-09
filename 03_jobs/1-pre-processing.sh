@@ -8,15 +8,15 @@
 set -e
 
 # Set project root path here
-cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/
+cd /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/
 
 LOGFILE="03_jobs/logs/processing_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs
 
 # Set UK Biobank path here
-ukb_path=/rds/general/project/hda_25-26/live/TDS/TDS_Group4/extraction_and_recoding/outputs/ukb_recoded.rds
+ukb_path=/rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4//extraction_and_recoding/outputs/ukb_recoded.rds
 # Set CVD outcome path here
-cvd_events_path=/rds/general/project/hda_25-26/live/TDS/TDS_Group4/00_data/00_extracted/cvd_events.rds
+cvd_events_path=/rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/00_data/00_extracted/cvd_events_real.rds
 
 #Set missingness thresholds
 variable_threshold=0.3
@@ -24,7 +24,7 @@ participant_threshold=0.3
 
 
 eval "$(~/anaconda3/bin/conda shell.bash hook)"
-source activate r413
+source activate phd_r
 
 echo "Starting initial cleaning script..." >> $LOGFILE 2>&1
 Rscript 01_scripts/01_processing/00_initial_clean.R $ukb_path >> $LOGFILE 2>&1

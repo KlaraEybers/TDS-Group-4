@@ -9,7 +9,7 @@ set -e
 
 export SCENARIO="main"
 
-cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/
+cd /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/
 
 LOGFILE="03_jobs/logs/stab_sel_main_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs

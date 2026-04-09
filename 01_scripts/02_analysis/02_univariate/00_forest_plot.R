@@ -9,7 +9,7 @@ library(purrr)
 
 # Load data ---------------------------------------------------------------
 
-df <- readRDS(here("00_data", "01_processed", "ukb_train_imputed.rds"))
+df <- readRDS(here("00_data", "01_processed", "03_imputation", "df_train_imputed.rds"))
 
 # Basic checks for CVD ----------------------------------------------------
 

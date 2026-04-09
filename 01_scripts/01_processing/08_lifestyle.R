@@ -19,7 +19,7 @@ pattern <- paste(c(
   "tobacco_exp_out",
   "smoking_status",
   "pack_yrs",
-  "met_min_week_all",
+  # "met_min_week_all",
   "age_stop_smok",
   "age_at_recruitment"
 ), collapse = "|")
@@ -88,15 +88,15 @@ barplot(out_tab,
         xlab = "Hours",
         ylab = "Count")
 
-table(selected_data$met_min_week_all.0.0 %in% c(-1, -3))
-table(selected_data$met_min_week_all.0.0)[c("-1","-3")]
+# table(selected_data$met_min_week_all.0.0 %in% c(-1, -3))
+# table(selected_data$met_min_week_all.0.0)[c("-1","-3")]
 
 met <- selected_data$pack_yrs.0.0
 head(met, 100)
 
-hist(selected_data$met_min_week_all.0.0,
-     main = "Raw MET-min/week",
-     xlab = "MET-min/week")
+# hist(selected_data$met_min_week_all.0.0,
+#      main = "Raw MET-min/week",
+#      xlab = "MET-min/week")
 
 mean(met, na.rm = TRUE)
 sd(met, na.rm = TRUE)
@@ -214,9 +214,9 @@ lifestyle_clean <- selected_data %>%
     # ----------------------------------------------------------
     # MET-min/week (keep as-is for now)
     # ----------------------------------------------------------
-    met_min_week_all = suppressWarnings(as.numeric(met_min_week_all.0.0)),
-    met_min_week_all = ifelse(!is.na(met_min_week_all) & met_min_week_all < 0, NA, met_min_week_all),
-    met_min_week_all = ifelse(!is.na(met_min_week_all) & met_min_week_all > 20000, NA, met_min_week_all)
+    # met_min_week_all = suppressWarnings(as.numeric(met_min_week_all.0.0)),
+    # met_min_week_all = ifelse(!is.na(met_min_week_all) & met_min_week_all < 0, NA, met_min_week_all),
+    # met_min_week_all = ifelse(!is.na(met_min_week_all) & met_min_week_all > 20000, NA, met_min_week_all)
   ) %>%
   mutate(
     passive_cat = case_when(
@@ -236,8 +236,8 @@ lifestyle_clean <- selected_data %>%
     smoking_status_refined,
     pack_yrs,
     passive_total_hrs,
-    passive_cat,
-    met_min_week_all
+    passive_cat
+    # met_min_week_all
   )
 
 saveRDS(lifestyle_clean, here("00_data", "01_processed", "lifestyle_cleaned.rds"))
@@ -280,6 +280,6 @@ summary(lifestyle_clean$passive_total_hrs)
 quantile(lifestyle_clean$passive_total_hrs, probs = c(0.5,0.75,0.9,0.95,0.99), na.rm=TRUE)
 max(lifestyle_clean$passive_total_hrs, na.rm=TRUE)
 
-summary(lifestyle_clean$met_min_week_all)
+# summary(lifestyle_clean$met_min_week_all)
 summary(lifestyle_clean$pack_yrs)
   

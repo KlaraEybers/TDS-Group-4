@@ -1,17 +1,17 @@
 #PBS -l walltime=2:00:00
-#PBS -l select=1:ncpus=4:mem=50
+#PBS -l select=1:ncpus=4:mem=50GB
 #PBS -N pre-processing
 
 set -e
 
 # Set project root path here
-cd /rds/general/project/hda_25-26/live/TDS/TDS_Group4/
+cd /rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/
 
 # Set UK Biobank path here
-ukb_path=/rds/general/project/hda_25-26/live/TDS/TDS_Group4/extraction_and_recoding/outputs/ukb_recoded.rds
+ukb_path=/rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/extraction_and_recoding/outputs/ukb_recoded.rds
 
 eval "$(~/anaconda3/bin/conda shell.bash hook)"
-source activate r413
+source activate phd_r
 
 echo "Starting initial cleaning script..."
 Rscript 01_scripts/01_processing/00_initial_clean.R $ukb_path
@@ -62,6 +62,5 @@ Rscript 01_scripts/01_processing/11_remove_missing.R
 echo "Missingness script done. Exit code: $?"
 
 echo "Starting missingness visualisation script..."
-Rscript 01_scripts/03_report/00_missingness/missingness_final.R
+# Rscript 01_scripts/03_report/00_missingness/missingness_final.R
 echo "Missingness visualisation script done. Exit code: $?"
-

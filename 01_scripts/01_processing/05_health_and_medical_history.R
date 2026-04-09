@@ -124,7 +124,7 @@ preg_cols <- c(
 )
 
 ukb_clean <- ukb_clean %>%
-  mutate(across(all_of(preg_cols), ~ suppressWarnings(as.numeric(as.character(.))))) %>%
+  # mutate(across(all_of(preg_cols), ~ suppressWarnings(as.numeric(as.character(.))))) %>%
   mutate(
     heart_problems_collapsed = case_when(
       if_any(all_of(heart_cols), ~ .x %in% heart_yes_vals) ~ "Yes",
@@ -149,18 +149,18 @@ ukb_clean <- ukb_clean %>%
       TRUE ~ NA_character_
     ),
     
-    n_previous_pregnancies_collapsed = pmax(!!!rlang::syms(preg_cols), na.rm = TRUE),
-    n_previous_pregnancies_collapsed = ifelse(
-      is.infinite(n_previous_pregnancies_collapsed),
-      NA_real_,
-      n_previous_pregnancies_collapsed
-    )
+    # n_previous_pregnancies_collapsed = pmax(!!!rlang::syms(preg_cols), na.rm = TRUE),
+    # n_previous_pregnancies_collapsed = ifelse(
+    #   is.infinite(n_previous_pregnancies_collapsed),
+    #   NA_real_,
+    #   n_previous_pregnancies_collapsed
+    # )
   ) %>%
   select(
     -all_of(heart_cols),
     -all_of(meds_horm_cols),
     -all_of(meds_cols),
-    -all_of(preg_cols)
+    # -all_of(preg_cols)
   )
 
 # Convert implausible ages to NA

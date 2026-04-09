@@ -61,7 +61,7 @@ source(here("01_scripts", "01_processing", "12_imputation_functions.R"))
 
 # Toggle for test run or job script run -----------------------------------
 
-TEST_MODE <- FALSE  # Set to FALSE for full run
+TEST_MODE <- F  # Set to FALSE for full run
 TEST_N <- 40000
 
 
@@ -84,7 +84,7 @@ exposure_vars <- c(
 )
 
 bio_vars <- c(
-  "sbp", "dbp", "grip_strength", "whr", "heel_bone_density", "body_fat_mass",
+  "sbp", "dbp", "grip_strength", "whr",
   "wbc", "platelets", "albumin", "alp", "alt", "apoa1", "apob", "ast",
   "bilirubin", "total_cholesterol", "creatinine", "crp", "cystatin_c",
   "ggt", "hba1c", "hdl_cholesterol", "ldl_direct", "lpa", "triglycerides", 
@@ -96,6 +96,7 @@ bio_vars <- c(
 # "dvt_dx_age", "pe_dx_age", "stroke_dx_age",
 # "heart_problems_collapsed", "meds_chol_bp_diabetes_hormone_collapsed",
 # "meds_chol_bp_diabetes_collapsed", "long_ill", "n_previous_pregnancies_collapsed"
+# "heel_bone_density",  "body_fat_mass",
 
 
 # Remove NA ethnicity -----------------------------------------------------
@@ -121,7 +122,7 @@ colSums(is.na(df[, confounder_vars]))
 
 # Skewness test
 df %>%
-  select(all_of(bio_vars)) %>%
+  select(any_of(bio_vars)) %>%
   select(where(is.numeric)) %>%
   sapply(function(x) skewness(x, na.rm = TRUE)) %>%
   sort(decreasing = TRUE)

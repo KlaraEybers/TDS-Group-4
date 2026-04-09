@@ -67,7 +67,7 @@ physical_cleaned <- readRDS(here("00_data", "01_processed", "physical_cleaned.rd
 sociodemographic_cleaned <- readRDS(here("00_data", "01_processed", "sociodemographic_cleaned.rds"))
 
 # Import cvd events
-cvd_events <- readRDS(here("00_data", "00_extracted", "cvd_events.rds"))
+cvd_events <- readRDS(here("00_data", "00_extracted", "cvd_events_real.rds"))
 
 
 # Clean CVD events --------------------------------------------------------
@@ -99,7 +99,6 @@ domains_merged <- sociodemographic_cleaned %>%
 final_merged <- domains_merged %>%
   left_join(cvd_cleaned, by = "eid") %>%
   mutate(has_cvd = ifelse(!is.na(first_cvd_date), 1, 0))
-
 
 
 # Remove CVD before recruitment -------------------------------------------

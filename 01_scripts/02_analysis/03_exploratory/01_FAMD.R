@@ -10,7 +10,7 @@ library(ggplot2)
 
 # Import data -------------------------------------------------------------
 
-df <- readRDS(here("00_data", "01_processed", "ukb_train_imputed.rds"))
+df <- readRDS(here("00_data", "01_processed", "03_imputation", "df_train_imputed.rds"))
 
 # Remove ID / outcome / dates ------------------------------------------------
 
@@ -308,7 +308,7 @@ plot_bar <- function(var){
 
 plot_bar("sex")
 plot_bar("smoking_status_refined")
-plot_bar("diabetes_doctor_diagnosed")
+# plot_bar("diabetes_doctor_diagnosed")
 plot_bar("alcohol_consumption")
 
 -----------------------------------------------------------
@@ -323,6 +323,6 @@ factor_levels <- sapply(df_analysis[, fac_vars, drop = FALSE], nlevels)
 n_factor_dims <- sum(factor_levels - 1)
 
 # Total effective dimensionality
-max_famd_dims <- n_numeric_dims + n_factor_dims
+cd <- n_numeric_dims + n_factor_dims
 
 cat("Estimated maximum FAMD dimensions/components:", max_famd_dims, "\n")

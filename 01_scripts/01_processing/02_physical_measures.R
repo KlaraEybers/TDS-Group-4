@@ -151,18 +151,18 @@ physical_clean <- physical_clean %>%
 # Whole body fat mass and heel bone density -------------------------------
 
 # Clean heel bone density and body fat mass
-physical_clean <- physical_clean %>%
-  mutate(
+# physical_clean <- physical_clean %>%
+  # mutate(
     # Convert heel bone density from character to numeric
-    heel_bone_density = as.numeric(heel_bdensity_tscore.0.0),
+    # heel_bone_density = as.numeric(heel_bdensity_tscore.0.0),
     
     # Body fat mass: set negative values to NA (physiologically impossible)
-    body_fat_mass = ifelse(whole_b_f_mass.0.0 < 0, NA, whole_b_f_mass.0.0)
-  )
+    # body_fat_mass = ifelse(whole_b_f_mass.0.0 < 0, NA, whole_b_f_mass.0.0)
+  # )
 
 # Drop original columns
-physical_clean <- physical_clean %>%
-  select(-heel_bdensity_tscore.0.0, -whole_b_f_mass.0.0)
+# physical_clean <- physical_clean %>%
+  # select(-heel_bdensity_tscore.0.0, -whole_b_f_mass.0.0)
 
 
 # Save RDS ----------------------------------------------------------------

@@ -8,7 +8,6 @@ library(stringr)
 library(readxl)
 library(tibble)
 
-
 # Import data -------------------------------------------------------------
 
 # Import UK Biobank data either from job script (real) or synthetic (path)

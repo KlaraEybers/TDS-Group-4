@@ -1,7 +1,14 @@
 
 *.rds
+*.e*
+*.o*
+*.pdf
+.Rproj.user/*
 !cvd_events.rds
 !.gitkeep
+*.png
+*.csv
+*.Rproj
 
 .RData
 .Rhistory

@@ -47,29 +47,31 @@ TDS_Group4/
 |   |   |-- 16_full_table_1.R                 # Table 1 (full cohort)
 |   |   `-- 17_imputed_cohort_table_1.R       # Table 1 (imputed cohort)
 |   `-- 02_analysis/
-|       |-- 01_descriptive/
-|       |   |-- 00_missingness.R              # Missingness visualisation
-|       |   `-- 01_FAMD_and_Correlation.R     # FAMD & correlation analysis
-|       |-- 02_univariate/
-|       |   |-- 00_forest_plot.R              # Univariate OR forest plots
-|       |   `-- 01_manhattan_plot.R           # Manhattan plot
-|       |-- 03_stability_selection/
-|       |   |-- 01_stability_selection_outcome.R    # LASSO 1: exposures -> CVD
-|       |   |-- 02_stability_selection_mediators1.R # LASSO 2: exposures -> mediators
-|       |   |-- 03_incrementation_analysis.R        # Incremental AUC analysis
-|       |   `-- 04_duplication_script.R             # Stability selection diagnostics
-|       |-- 04_multivariate/
-|       |   |-- mediation_analysis.R          # Mediation analysis
-|       |   |-- prediction_analysis.R         # Logistic regression & ROC
-|       |   `-- sex_stratified.R              # Sex-stratified analysis
-|       |-- 05_neural_network/
-|       |   `-- cvd_nn.ipynb                  # Neural network comparator
-|       |-- 06_decision_trees/
-|       |   |-- decision_trees_all_w_shap.ipynb
-|       |   |-- decision_trees_confounders_selected_w_shap.ipynb
-|       |   `-- decision_trees_confounders_w_shap.ipynb
-|       `-- 08_combined_roc_curves/
-|           `-- combined_roc_curves.ipynb     # Cross-model ROC comparison
+|   |   |-- 01_descriptive/
+|   |   |   |-- 00_missingness.R              # Missingness visualisation
+|   |   |   `-- 01_FAMD_and_Correlation.R     # FAMD & correlation analysis
+|   |   |-- 02_univariate/
+|   |   |   |-- 00_forest_plot.R              # Univariate OR forest plots
+|   |   |   `-- 01_manhattan_plot.R           # Manhattan plot
+|   |   |-- 03_stability_selection/
+|   |   |   |-- 01_stability_selection_outcome.R    # LASSO 1: exposures -> CVD
+|   |   |   |-- 02_stability_selection_mediators1.R # LASSO 2: exposures -> mediators
+|   |   |   |-- 03_incrementation_analysis.R        # Incremental AUC analysis
+|   |   |   `-- 04_duplication_script.R             # Stability selection diagnostics
+|   |   |-- 04_multivariate/
+|   |   |   |-- mediation_analysis.R          # Mediation analysis
+|   |   |   |-- prediction_analysis.R         # Logistic regression & ROC
+|   |   |   `-- sex_stratified.R              # Sex-stratified analysis
+|   |   |-- 05_neural_network/
+|   |   |   `-- cvd_nn.ipynb                  # Neural network comparator
+|   |   |-- 06_decision_trees/
+|   |   |   |-- decision_trees_all_w_shap.ipynb
+|   |   |   |-- decision_trees_confounders_selected_w_shap.ipynb
+|   |   |   `-- decision_trees_confounders_w_shap.ipynb
+|   |   `-- 08_combined_roc_curves/
+|   |       `-- combined_roc_curves.ipynb     # Cross-model ROC comparison
+|   |`-- rds_file_conversion.R                # Converting/removing RDS files
+|   `--- scenario_variable_names.R            # Script to extract and export variable names
 |
 |-- 02_results/                               <- generated (empty on GitHub)
 |
@@ -220,6 +222,22 @@ Step 6 — Machine learning models:
    Uses the Python environment in group4_python_environment/.
    Decision trees (random forest, XGBoost) and feedforward neural network.
    Output: 02_results/
+   
+Step 7 - Converting/removing RDS files:
+
+  rds_file_conversion.R
+  
+  Creates a copy of the 02_results folder (which has either converted RDS files
+  into csv files or removed them entirely).
+  Output: 02_resultsv2/
+
+Step 8 - Extract Final Variable Names for Reporting
+  
+  scenario_variable_names.R
+  
+  Run the extraction script to output `scenario_variable_names.csv` containing the final variable names 
+  used across the three different scenarios (Main, Anthropometric, and Complete Case).
+  Output: 02_resultsv2/
 
 # ============================================================
 ## ENVIRONMENT DETAILS

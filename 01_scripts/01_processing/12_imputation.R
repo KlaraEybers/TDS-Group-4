@@ -75,7 +75,7 @@ source(here("01_scripts", "00_variable_dictionary.R"))
 
 # Toggle for test run or job script run -----------------------------------
 
-TEST_MODE <- TRUE  # Set to FALSE for full run
+TEST_MODE <- FALSE  # Set to FALSE for full run
 TEST_N <- 10000
 
 

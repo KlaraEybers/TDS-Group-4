@@ -96,7 +96,7 @@ meta_base <- data.frame(
   var = c(
     "age","sex","ethnicity","highest_qualification","employment",
     "household_income","housing","household_size","has_vehicle",
-    "sbp","dbp","grip_strength","whr","body_fat_mass","heel_bone_density",
+    "sbp","dbp","grip_strength","whr","body_fat_mass",
     "diet_score","alcohol_consumption",
     "has_cvd"
   ),

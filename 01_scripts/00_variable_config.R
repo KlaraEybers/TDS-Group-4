@@ -55,8 +55,7 @@ if (!exists("SCENARIO")) {
 cat("=== CONFIG: SCENARIO =", SCENARIO, "===\n")
 
 # ── Anthropometric variables (the contested group) ───────────────────────────
-anthro_vars <- c("sbp", "dbp", "grip_strength", "whr",
-                 "heel_bone_density", "body_fat_mass")
+anthro_vars <- c("sbp", "dbp", "grip_strength", "whr")
 
 # ── Admin / outcome variables (always the same) ─────────────────────────────
 admin_vars <- c("eid", "recruitment_date", "death_date",

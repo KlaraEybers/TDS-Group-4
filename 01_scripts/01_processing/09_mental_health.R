@@ -55,11 +55,11 @@ ukb_clean %>%
     freq_friend_family_visits.0.0,
     mh_gp.0.0,
     mh_psych.0.0,
-    work_job_satisfaction.0.0,
-    health_satisfaction.0.0,
-    family_relationship_satisfaction.0.0,
-    friendship_satisfaction.0.0,
-    financial_situation_satisfaction.0.0,
+    # work_job_satisfaction.0.0,
+    # health_satisfaction.0.0,
+    # family_relationship_satisfaction.0.0,
+    # friendship_satisfaction.0.0,
+    # financial_situation_satisfaction.0.0,
     neuroticism_score.0.0,
     mood_dx.0.0
   ) %>%
@@ -114,16 +114,16 @@ mental_health_clean <- selected_data %>%
     # ----------------------------------------------------------
     # Satisfaction composite (mean of 4)
     # ----------------------------------------------------------
-    work_job_satisfaction_num = case_when(
-      work_job_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
-      work_job_satisfaction.0.0 == "Extremely unhappy" ~ 0,
-      work_job_satisfaction.0.0 == "Very unhappy" ~ 1,
-      work_job_satisfaction.0.0 == "Moderately unhappy" ~ 2,
-      work_job_satisfaction.0.0 == "Moderately happy" ~ 3,
-      work_job_satisfaction.0.0 == "Very happy" ~ 4,
-      work_job_satisfaction.0.0 == "Extremely happy" ~ 5,
-      TRUE ~ NA_real_
-    ),
+    # work_job_satisfaction_num = case_when(
+    #   work_job_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+    #   work_job_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+    #   work_job_satisfaction.0.0 == "Very unhappy" ~ 1,
+    #   work_job_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+    #   work_job_satisfaction.0.0 == "Moderately happy" ~ 3,
+    #   work_job_satisfaction.0.0 == "Very happy" ~ 4,
+    #   work_job_satisfaction.0.0 == "Extremely happy" ~ 5,
+    #   TRUE ~ NA_real_
+    # ),
     
     # We took out health satisfaction since it may be a collider
     # health_satisfaction_num = case_when(
@@ -137,58 +137,58 @@ mental_health_clean <- selected_data %>%
     #   TRUE ~ NA_real_
     # ),
     
-    family_relationship_satisfaction_num = case_when(
-      family_relationship_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
-      family_relationship_satisfaction.0.0 == "Extremely unhappy" ~ 0,
-      family_relationship_satisfaction.0.0 == "Very unhappy" ~ 1,
-      family_relationship_satisfaction.0.0 == "Moderately unhappy" ~ 2,
-      family_relationship_satisfaction.0.0 == "Moderately happy" ~ 3,
-      family_relationship_satisfaction.0.0 == "Very happy" ~ 4,
-      family_relationship_satisfaction.0.0 == "Extremely happy" ~ 5,
-      TRUE ~ NA_real_
-    ),
-    
-    friendship_satisfaction_num = case_when(
-      friendship_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
-      friendship_satisfaction.0.0 == "Extremely unhappy" ~ 0,
-      friendship_satisfaction.0.0 == "Very unhappy" ~ 1,
-      friendship_satisfaction.0.0 == "Moderately unhappy" ~ 2,
-      friendship_satisfaction.0.0 == "Moderately happy" ~ 3,
-      friendship_satisfaction.0.0 == "Very happy" ~ 4,
-      friendship_satisfaction.0.0 == "Extremely happy" ~ 5,
-      TRUE ~ NA_real_
-    ),
-    
-    financial_situation_satisfaction_num = case_when(
-      financial_situation_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
-      financial_situation_satisfaction.0.0 == "Extremely unhappy" ~ 0,
-      financial_situation_satisfaction.0.0 == "Very unhappy" ~ 1,
-      financial_situation_satisfaction.0.0 == "Moderately unhappy" ~ 2,
-      financial_situation_satisfaction.0.0 == "Moderately happy" ~ 3,
-      financial_situation_satisfaction.0.0 == "Very happy" ~ 4,
-      financial_situation_satisfaction.0.0 == "Extremely happy" ~ 5,
-      TRUE ~ NA_real_
-    ),
-    
-    # Count how many of the 4 items are present
-    satisfaction_n = rowSums(!is.na(cbind(
-      work_job_satisfaction_num,
-      family_relationship_satisfaction_num,
-      friendship_satisfaction_num,
-      financial_situation_satisfaction_num
-    ))),
+    # family_relationship_satisfaction_num = case_when(
+    #   family_relationship_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+    #   family_relationship_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+    #   family_relationship_satisfaction.0.0 == "Very unhappy" ~ 1,
+    #   family_relationship_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+    #   family_relationship_satisfaction.0.0 == "Moderately happy" ~ 3,
+    #   family_relationship_satisfaction.0.0 == "Very happy" ~ 4,
+    #   family_relationship_satisfaction.0.0 == "Extremely happy" ~ 5,
+    #   TRUE ~ NA_real_
+    # ),
+    # 
+    # friendship_satisfaction_num = case_when(
+    #   friendship_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+    #   friendship_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+    #   friendship_satisfaction.0.0 == "Very unhappy" ~ 1,
+    #   friendship_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+    #   friendship_satisfaction.0.0 == "Moderately happy" ~ 3,
+    #   friendship_satisfaction.0.0 == "Very happy" ~ 4,
+    #   friendship_satisfaction.0.0 == "Extremely happy" ~ 5,
+    #   TRUE ~ NA_real_
+    # ),
+    # 
+    # financial_situation_satisfaction_num = case_when(
+    #   financial_situation_satisfaction.0.0 %in% c("Do not know", "Prefer not to answer") ~ NA_real_,
+    #   financial_situation_satisfaction.0.0 == "Extremely unhappy" ~ 0,
+    #   financial_situation_satisfaction.0.0 == "Very unhappy" ~ 1,
+    #   financial_situation_satisfaction.0.0 == "Moderately unhappy" ~ 2,
+    #   financial_situation_satisfaction.0.0 == "Moderately happy" ~ 3,
+    #   financial_situation_satisfaction.0.0 == "Very happy" ~ 4,
+    #   financial_situation_satisfaction.0.0 == "Extremely happy" ~ 5,
+    #   TRUE ~ NA_real_
+    # ),
+    # 
+    # # Count how many of the 4 items are present
+    # satisfaction_n = rowSums(!is.na(cbind(
+    #   work_job_satisfaction_num,
+    #   family_relationship_satisfaction_num,
+    #   friendship_satisfaction_num,
+    #   financial_situation_satisfaction_num
+    # ))),
     
     # Mean satisfaction score: (0-5), only if >= 2 items answered
-    satisfaction_mean = ifelse(
-      satisfaction_n >= 2,
-      rowMeans(cbind(
-        work_job_satisfaction_num,
-        family_relationship_satisfaction_num,
-        friendship_satisfaction_num,
-        financial_situation_satisfaction_num
-      ), na.rm = TRUE),
-      NA_real_
-    ),
+    # satisfaction_mean = ifelse(
+    #   satisfaction_n >= 2,
+    #   rowMeans(cbind(
+    #     work_job_satisfaction_num,
+    #     family_relationship_satisfaction_num,
+    #     friendship_satisfaction_num,
+    #     financial_situation_satisfaction_num
+    #   ), na.rm = TRUE),
+    #   NA_real_
+    # ),
     
     # ----------------------------------------------------------
     # Neuroticism score: (keep numeric; cap implausible), (-1/-3 -> NA)
@@ -204,7 +204,7 @@ mental_health_clean <- selected_data %>%
     eid,
     visits_cat,
     mh_sought_help,
-    satisfaction_mean,
+    # satisfaction_mean,
     neuroticism_score,
   )
 

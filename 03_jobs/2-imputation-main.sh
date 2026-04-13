@@ -15,7 +15,7 @@ LOGFILE="03_jobs/logs/imputation_main_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs
 
 eval "$(~/anaconda3/bin/conda shell.bash hook)"
-source activate r413
+source activate phd_r
 
 module load NLopt/2.7.1-GCCcore-13.3.0
 

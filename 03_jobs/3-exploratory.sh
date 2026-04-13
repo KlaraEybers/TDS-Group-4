@@ -14,7 +14,7 @@ LOGFILE="03_jobs/logs/exploratory_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs
 
 # Set CVD outcome path here
-cvd_events_path=/rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/00_data/00_extracted/cvd_events.rds
+cvd_events_path=/rds/general/project/hda_25-26/live/TDS/fg520/TDS-Group-4/00_data/00_extracted/cvd_events_real.rds
 
 #Set missingness thresholds
 variable_threshold=0.3
@@ -22,7 +22,7 @@ participant_threshold=0.3
 
 
 eval "$(~/anaconda3/bin/conda shell.bash hook)"
-source activate r413
+source activate phd_r
 
 echo "Starting missingness visualisation script..." >> $LOGFILE 2>&1
 Rscript 01_scripts/02_analysis/01_descriptive/00_missingness.R $variable_threshold $participant_threshold >> $LOGFILE 2>&1

@@ -31,7 +31,7 @@ prep_for_imputation <- function(data, vars_to_impute, predictor_vars, min_level_
 
 # Define full imputation function ------------------------------------------
 
-run_imputation <- function(data, maxiter = 5, num_trees = 100, return_models = FALSE) {
+run_imputation <- function(data, maxiter = 1, num_trees = 100, return_models = FALSE) {
   n_cores <- parallel::detectCores()
   
   mr <- miceRanger(
@@ -77,10 +77,10 @@ run_dag_imputation <- function(data, label, return_models = FALSE) {
   
   # Original for diagnostics
   df_original <- bind_cols(
-    data[, confounder_vars],
-    data[, exposure_vars],
-    data[, bio_vars]
-  ) %>%
+    data %>% select(any_of(confounder_vars)),
+    data %>% select(any_of(exposure_vars)),
+    data %>% select(any_of(bio_vars))
+) %>%
     mutate(
       across(c(any_of(c("age_high_bp_dx", "age_diabetes_dx", "angina_dx_age",
                         "mi_dx_age", "dvt_dx_age", "pe_dx_age", "stroke_dx_age"))),
@@ -128,10 +128,10 @@ apply_dag_imputation <- function(data, train_result, label) {
   
   # Original for diagnostics
   df_original <- bind_cols(
-    data[, confounder_vars],
-    data[, exposure_vars],
-    data[, bio_vars]
-  ) %>%
+    data %>% select(any_of(confounder_vars)),
+    data %>% select(any_of(exposure_vars)),
+    data %>% select(any_of(bio_vars))
+) %>%
     mutate(
       across(c(any_of(c("age_high_bp_dx", "age_diabetes_dx", "angina_dx_age",
                         "mi_dx_age", "dvt_dx_age", "pe_dx_age", "stroke_dx_age"))),

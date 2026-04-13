@@ -358,8 +358,8 @@ sociodem_clean <- sociodem_clean %>%
          -income_score_wales.0.0, 
          -income_score_scotland.0.0,
          -employment_score_england.0.0, 
-         -employment_score_wales.0.0, 
-         -employment_score_scotland.0.0)
+         -employment_score_wales.0.0)
+         # -employment_score_scotland.0.0))
 
 
 # Plots of distributions
@@ -432,8 +432,9 @@ sociodem_clean <- sociodem_clean %>%
 
 # Drop duplicate death date column
 sociodem_clean <- sociodem_clean %>%
-  rename(death_date = death_date.0.0) %>% 
-  select(-death_date.0.0.1)
+  rename(death_date = death_date.0.0)
+  #%>% 
+  #select(-death_date.0.0.1)
 
 
 # Rename any remaining columns --------------------------------------------

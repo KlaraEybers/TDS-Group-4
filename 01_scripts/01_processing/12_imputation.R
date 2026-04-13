@@ -75,8 +75,8 @@ source(here("01_scripts", "00_variable_dictionary.R"))
 
 # Toggle for test run or job script run -----------------------------------
 
-TEST_MODE <- FALSE  # Set to FALSE for full run
-TEST_N <- 40000
+TEST_MODE <- TRUE  # Set to FALSE for full run
+TEST_N <- 10000
 
 
 # Classify variables ------------------------------------------------------
@@ -126,7 +126,7 @@ if (length(exclude_vars) > 0) {
 # Confounders shouldn't be imputed — drop rows with any NA
 
 cat("NAs per confounder before drop:\n")
-print(colSums(is.na(df[, confounder_vars])))
+# print(colSums(is.na(df[, confounder_vars])))
 
 n_before <- nrow(df)
 df <- df %>% drop_na(any_of(confounder_vars))

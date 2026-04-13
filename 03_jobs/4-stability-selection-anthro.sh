@@ -15,7 +15,7 @@ LOGFILE="03_jobs/logs/stab_sel_anthro_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p 03_jobs/logs
 
 eval "$(~/anaconda3/bin/conda shell.bash hook)"
-source activate r413
+source activate phd_r
 
 echo "Starting stability selection: SCENARIO=${SCENARIO}" >> $LOGFILE 2>&1
 echo "Started: $(date)" >> $LOGFILE 2>&1

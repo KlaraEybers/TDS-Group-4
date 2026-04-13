@@ -31,7 +31,7 @@ pattern <- paste(c(
   "heart_problems",
   "meds_chol_bp_diabetes_hormone",
   "meds_chol_bp_diabetes",
-  "n_previous_pregnancies",
+  # "n_previous_pregnancies",
   "date_mi",
   "stroke_date",
   "cm_dx_date",
@@ -149,12 +149,12 @@ ukb_clean <- ukb_clean %>%
       TRUE ~ NA_character_
     ),
     
-    n_previous_pregnancies_collapsed = pmax(!!!rlang::syms(preg_cols), na.rm = TRUE),
-    n_previous_pregnancies_collapsed = ifelse(
-      is.infinite(n_previous_pregnancies_collapsed),
-      NA_real_,
-      n_previous_pregnancies_collapsed
-    )
+    # n_previous_pregnancies_collapsed = pmax(!!!rlang::syms(preg_cols), na.rm = TRUE),
+    # n_previous_pregnancies_collapsed = ifelse(
+    #   is.infinite(n_previous_pregnancies_collapsed),
+    #   NA_real_,
+    #   n_previous_pregnancies_collapsed
+    # )
   ) %>%
   select(
     -any_of(heart_cols),
@@ -220,8 +220,9 @@ na_summary
 collapsed_cols <- c(
   "heart_problems_collapsed",
   "meds_chol_bp_diabetes_hormone_collapsed",
-  "meds_chol_bp_diabetes_collapsed",
-  "n_previous_pregnancies_collapsed"
+  "meds_chol_bp_diabetes_collapsed"
+  # ,
+  # "n_previous_pregnancies_collapsed"
 )
 
 for (v in collapsed_cols) {
